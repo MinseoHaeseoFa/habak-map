@@ -6,100 +6,195 @@
 <title>차박 지도 — 오늘 밤 별 보기 좋은 곳</title>
 <style>
   :root{
-    --bg:#0b1020; --panel:#141b33; --panel2:#1a2340; --line:#263156;
-    --txt:#eef1ff; --muted:#9aa3c7; --accent:#ffd166; --good:#4ade80; --mid:#facc15; --bad:#f87171;
+    --bg:#0a0e1f; --bg2:#0d1330; --panel:#141b3a; --panel2:#1a2350; --line:#26335f;
+    --txt:#eef1ff; --muted:#9aa3c7; --accent:#ffd166; --accent2:#ffb703;
+    --good:#34d399; --mid:#fbbf24; --bad:#f87171;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif; min-height:100vh; display:flex; flex-direction:column;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif; min-height:100vh;}
   #errbar{display:none; background:#3a1420; color:#ffc9c9; border-bottom:1px solid #7a2b3a; padding:10px 22px; font-size:13px;}
-  header{padding:18px 22px 12px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
-  header h1{font-size:22px; font-weight:800; letter-spacing:-.5px;}
-  header h1 .star{color:var(--accent);}
-  header p{color:var(--muted); font-size:13px; width:100%;}
-  .moon-chip{margin-left:auto; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center;}
+
+  /* ===== 상단바 ===== */
+  .topbar{display:flex; align-items:center; gap:18px; padding:16px 24px 12px; flex-wrap:wrap;}
+  .brand h1{font-size:22px; font-weight:800; letter-spacing:-.5px;}
+  .brand h1 .st{color:var(--accent);}
+  .habak-badge{font-size:11px; font-weight:700; background:linear-gradient(135deg,#0ea5a5,#0c7c7c); color:#fff; border-radius:6px; padding:3px 8px; vertical-align:3px; margin-left:6px;}
+  .brand p{color:var(--muted); font-size:12.5px; margin-top:3px;}
+  .tabs{display:flex; gap:6px; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:5px;}
+  .tab{font-size:13px; color:var(--muted); text-decoration:none; padding:8px 16px; border-radius:999px; white-space:nowrap;}
+  .tab.on{background:var(--accent); color:#1a1a1a; font-weight:700;}
+  .tab:hover:not(.on){color:var(--txt);}
+  .top-right{margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .moon-chip{background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:13px; color:var(--muted); display:flex; gap:8px; align-items:center;}
   .moon-chip b{color:var(--txt);}
-  #top3{display:flex; gap:10px; padding:4px 22px 12px; flex-wrap:wrap;}
-  .top-card{background:linear-gradient(135deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:12px; padding:10px 14px; min-width:190px; cursor:pointer; transition:.15s;}
-  .top-card:hover{border-color:var(--accent); transform:translateY(-2px);}
+  .live-chip{background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.4); color:var(--good); border-radius:999px; padding:7px 14px; font-size:12.5px; font-weight:600;}
+
+  /* ===== 알림바 ===== */
+  .alertbar{display:flex; align-items:center; gap:10px; margin:2px 24px 0; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 16px; font-size:13px; flex-wrap:wrap;}
+  .pulse{width:9px; height:9px; border-radius:50%; background:var(--good); box-shadow:0 0 0 0 rgba(52,211,153,.6); animation:pl 2s infinite;}
+  @keyframes pl{0%{box-shadow:0 0 0 0 rgba(52,211,153,.5);}70%{box-shadow:0 0 0 8px rgba(52,211,153,0);}100%{box-shadow:0 0 0 0 rgba(52,211,153,0);}}
+  .live-tag{background:var(--accent); color:#1a1a1a; font-weight:800; font-size:11.5px; border-radius:6px; padding:3px 8px;}
+  .alert-msg{color:#ffd9a0;}
+  .alert-right{margin-left:auto; display:flex; gap:14px; align-items:center; color:var(--muted); font-size:12.5px; flex-wrap:wrap;}
+  .alert-right b{color:var(--accent);}
+  .sync{color:var(--muted);}
+
+  /* ===== 섹션 ===== */
+  .sec{padding:18px 24px 0;}
+  .sec-head{display:flex; align-items:baseline; gap:10px; margin-bottom:12px; flex-wrap:wrap;}
+  .sec-head h2{font-size:18px; font-weight:800;}
+  .sec-sub{color:var(--muted); font-size:13px;}
+  .sec-right{margin-left:auto; font-size:12.5px; color:var(--good); background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3); padding:5px 12px; border-radius:999px;}
+
+  /* ===== TOP3 ===== */
+  .top3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .top-card{background:linear-gradient(150deg,var(--panel2),var(--panel)); border:1px solid var(--line); border-radius:16px; padding:16px 18px; cursor:pointer; transition:.15s; position:relative; overflow:hidden;}
+  .top-card:hover{border-color:var(--accent); transform:translateY(-3px);}
+  .top-card.first{border-color:rgba(255,209,102,.5);}
   .top-card .rank{font-size:12px; color:var(--accent); font-weight:700;}
-  .top-card .nm{font-weight:700; font-size:15px; margin:2px 0;}
+  .top-card .rank span{color:var(--muted); font-weight:400; margin-left:6px;}
+  .top-card .trow{display:flex; align-items:baseline; justify-content:space-between; margin:6px 0 4px;}
+  .top-card .nm{font-size:19px; font-weight:800;}
   .top-card .sc{font-size:13px; color:var(--muted);}
-  .top-card .sc b{font-size:18px;}
-  #filters{display:flex; gap:8px; padding:0 22px 12px; flex-wrap:wrap;}
-  #filters button{background:var(--panel); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:13px; cursor:pointer; font-family:inherit;}
-  #filters button.on{background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:700;}
-  main{flex:1; display:flex; gap:0; min-height:0; padding:0 22px;}
-  #mapWrap{flex:1.6; min-height:520px; border-radius:14px; border:1px solid var(--line); background:#0d1330; overflow:hidden; position:relative;}
+  .top-card .sc b{font-size:30px; color:var(--good); font-weight:800;}
+  .top-card .wxline{font-size:12.5px; color:var(--good); margin-bottom:8px;}
+  .top-card .quote{font-size:13px; color:#c9d2f2; line-height:1.5; font-style:italic;}
+
+  /* ===== 필터 ===== */
+  #filters{display:flex; gap:8px; flex-wrap:wrap;}
+  .fbtn{background:var(--panel); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:9px 16px; font-size:13.5px; cursor:pointer; font-family:inherit; display:flex; gap:7px; align-items:center;}
+  .fbtn small{color:var(--muted); font-size:11.5px;}
+  .fbtn.on{background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:700;}
+  .fbtn.on small{color:#1a1a1a;}
+  .fbtn .cnt{background:rgba(255,255,255,.12); border-radius:999px; padding:1px 8px; font-size:11.5px;}
+  .fbtn.on .cnt{background:rgba(0,0,0,.15);}
+  #regionFit{margin-top:10px; font-size:13px; color:var(--muted); background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:9px 14px; display:inline-block;}
+  #regionFit b{color:var(--accent);}
+
+  /* ===== 메인 ===== */
+  main{display:flex; gap:16px; padding:16px 24px 0; align-items:flex-start;}
+  #mapWrap{flex:1.55; min-height:560px; border-radius:18px; border:1px solid var(--line); background:#0b1130; overflow:hidden; position:relative; display:flex; flex-direction:column;}
+  .map-head{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:16px 18px 6px; flex-wrap:wrap;}
+  .map-head h2{font-size:16px; font-weight:800;}
+  .map-head p{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .map-head-right{display:flex; gap:8px; align-items:center;}
+  .src-badge{font-size:11.5px; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:4px 9px;}
+  .ghost-btn{font-size:12.5px; color:var(--txt); background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer; font-family:inherit;}
+  .ghost-btn:hover{border-color:var(--accent);}
+  .map-body{position:relative; flex:1; min-height:0;}
   #kmap{width:100%; height:100%; display:block;}
   .land{fill:#1d2650; stroke:#3a4c86; stroke-width:1.4;}
   .grat{stroke:#141c42; stroke-width:1;}
   .grat-t{fill:#3d4a7d; font-size:11px;}
-  .spot{stroke:#fff; stroke-width:2.5; cursor:pointer;}
+  .rlabel{fill:#54628f; font-size:12.5px; font-weight:600; text-anchor:middle; pointer-events:none;}
+  .spot{stroke:#fff; stroke-width:2.5; cursor:pointer; filter:drop-shadow(0 0 5px rgba(52,211,153,.55));}
   .spot:hover{stroke:var(--accent);}
-  .spot.sel{stroke:var(--accent); stroke-width:4;}
-  aside{flex:1; max-width:380px; margin-left:14px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; overflow-y:auto; max-height:70vh;}
-  aside h2{font-size:18px; margin-bottom:2px;}
-  .badges{display:flex; gap:6px; margin:8px 0 10px; flex-wrap:wrap;}
-  .badge{font-size:12px; padding:3px 10px; border-radius:999px; background:var(--panel2); border:1px solid var(--line); color:var(--muted);}
-  .desc{font-size:14px; line-height:1.6; color:#d6dbf5; margin-bottom:12px;}
-  .fac{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;}
-  .fac div{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:13px;}
-  .fac div span{display:block; font-size:11px; color:var(--muted); margin-bottom:2px;}
-  .wx-now{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
-  .wx-now .t{font-size:34px; font-weight:800;}
-  .wx-now .c{font-size:13px; color:var(--muted); line-height:1.5;}
-  .wx-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;}
-  .wx-grid div{background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:8px 4px; text-align:center; font-size:13px;}
-  .wx-grid div span{display:block; font-size:11px; color:var(--muted); margin-bottom:3px;}
-  .star-box{background:linear-gradient(135deg,#1c1440,#141b33); border:1px solid #3b2f6b; border-radius:12px; padding:14px; text-align:center; margin-bottom:12px;}
-  .star-box .score{font-size:40px; font-weight:800; color:var(--accent);}
-  .star-box .grade{font-size:15px; font-weight:700; margin:2px 0 6px;}
-  .star-box .moon{font-size:13px; color:var(--muted);}
+  .spot.sel{stroke:var(--accent); stroke-width:4; filter:drop-shadow(0 0 9px rgba(255,209,102,.8));}
+  .zoomctl{position:absolute; top:12px; left:12px; display:flex; flex-direction:column; gap:6px; z-index:5;}
+  .zoomctl button{width:34px; height:34px; border-radius:9px; background:rgba(20,27,58,.92); border:1px solid var(--line); color:var(--txt); font-size:18px; cursor:pointer; line-height:1;}
+  .zoomctl button:hover{border-color:var(--accent);}
+  .legend{display:flex; gap:16px; padding:10px 18px; font-size:12px; color:var(--muted); flex-wrap:wrap; border-top:1px solid var(--line);}
+  .dot{width:11px; height:11px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:middle;}
+  .maptip{display:flex; justify-content:space-between; gap:10px; padding:9px 18px 13px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
+  .maptip .r{color:var(--accent); font-weight:600;}
+
+  /* ===== 상세 패널 ===== */
+  aside{flex:1; max-width:400px; background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:20px; max-height:76vh; overflow-y:auto;}
+  .p-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px;}
+  .p-region{font-size:12px; color:#0d0d0d; font-weight:800; background:var(--accent); border-radius:6px; padding:3px 9px; display:inline-block; margin-bottom:6px;}
+  .p-addr{font-size:12.5px; color:var(--muted);}
+  .p-score{text-align:right;}
+  .p-score span{font-size:10.5px; letter-spacing:1.5px; color:var(--muted);}
+  .p-score b{font-size:38px; font-weight:800; color:var(--good); display:block; line-height:1;}
+  .p-score b i{font-size:15px; font-style:normal; color:var(--muted);}
+  aside h2{font-size:21px; font-weight:800; margin:2px 0 12px;}
+  .milky{display:flex; gap:12px; background:linear-gradient(135deg,#1c1440,#141b33); border:1px solid #3b2f6b; border-radius:14px; padding:14px; margin-bottom:14px;}
+  .milky .mi{font-size:26px;}
+  .milky b{font-size:14.5px; color:var(--accent); display:block; margin-bottom:4px;}
+  .milky p{font-size:13px; color:#c9d2f2; line-height:1.55;}
+  .hero{position:relative; border-radius:14px; overflow:hidden; margin-bottom:14px; background:linear-gradient(135deg,#1a2350,#0d1330); min-height:150px;}
+  .hero img{width:100%; display:block; aspect-ratio:16/9; object-fit:cover;}
+  .hero-tag{position:absolute; left:10px; bottom:10px; font-size:12px; background:rgba(0,0,0,.55); border-radius:8px; padding:5px 10px;}
+  .hero-score{position:absolute; right:10px; bottom:10px; font-size:12px; font-weight:700; background:rgba(52,211,153,.85); color:#06281c; border-radius:8px; padding:5px 10px;}
+  .wx4{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .wx4>div{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:flex; gap:10px; align-items:center;}
+  .wx4 .wi{font-size:22px;}
+  .wx4 span{font-size:11.5px; color:var(--muted); display:block; margin-bottom:3px;}
+  .wx4 b{font-size:16.5px; font-weight:800;}
+  .wx4 b small{font-size:12px; font-weight:400; color:var(--muted);}
+  .fac-title{font-size:13px; font-weight:700; color:var(--muted); margin-bottom:8px;}
+  .fac4{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .fac4>div{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px 12px; display:flex; gap:9px; align-items:center;}
+  .fac4 .fi{font-size:19px;}
+  .fac4 span{font-size:11px; color:var(--muted); display:block; margin-bottom:2px;}
+  .fac4 b{font-size:13px; font-weight:600;}
+  .fac4 b.muted{color:var(--muted); font-weight:400;}
+  .p-actions{display:flex; gap:10px; margin-bottom:12px;}
+  .navi-btn{flex:1; text-align:center; font-size:15px; font-weight:800; color:#1a1a1a; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:14px; padding:14px; text-decoration:none;}
+  .navi-btn:hover{filter:brightness(1.06);}
+  .share-btn{width:52px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); color:var(--txt); font-size:20px; cursor:pointer;}
+  .share-btn:hover{border-color:var(--accent);}
   .note{font-size:12.5px; line-height:1.6; color:var(--muted); background:var(--panel2); border:1px dashed var(--line); border-radius:10px; padding:10px 12px;}
   .note.warn{color:#ffd9a8; border-color:#6b4a2f; background:#2a1f14;}
-  .addr-line{font-size:13px; color:var(--muted); margin-bottom:8px;}
-  .navi-btn{display:inline-block; font-size:13px; font-weight:700; color:#1a1a1a; background:var(--accent); border-radius:999px; padding:8px 16px; text-decoration:none; margin-bottom:12px;}
-  .navi-btn:hover{filter:brightness(1.08);}
+  .empty{color:var(--muted); font-size:14px; line-height:1.8; text-align:center; padding:60px 10px;}
+  .loading{color:var(--muted); font-size:13px; padding:20px; text-align:center;}
   .retry{margin-top:10px; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:999px; padding:8px 18px; font-size:13px; cursor:pointer; font-family:inherit;}
   .retry:hover{border-color:var(--accent);}
-  .legend{display:flex; gap:14px; padding:10px 22px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
-  .dot{width:11px; height:11px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:middle;}
-  footer{padding:8px 22px 18px; font-size:12px; color:var(--muted); line-height:1.7;}
-  .empty{color:var(--muted); font-size:14px; line-height:1.8; text-align:center; padding:40px 10px;}
-  .loading{color:var(--muted); font-size:13px; padding:20px; text-align:center;}
-  @media (max-width:900px){
-    main{flex-direction:column;}
-    #mapWrap{min-height:380px;}
-    aside{max-width:none; margin:14px 0 0; max-height:none;}
+
+  /* ===== 꿀팁 ===== */
+  .tips{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .tip{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; display:flex; gap:13px;}
+  .tip .ti{font-size:30px; flex-shrink:0;}
+  .tip b{font-size:14.5px; display:block; margin-bottom:6px;}
+  .tip p{font-size:13px; color:var(--muted); line-height:1.65;}
+
+  /* ===== 푸터 ===== */
+  footer{margin-top:22px;}
+  .foot-pills{display:flex; gap:10px; padding:0 24px; flex-wrap:wrap;}
+  .foot-pills span{font-size:12.5px; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:8px 15px; color:var(--muted);}
+  .foot-pills span b{color:var(--good);}
+  .foot-base{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 24px 22px; font-size:12.5px; color:var(--muted); flex-wrap:wrap;}
+  .foot-base .fl{display:flex; gap:16px;}
+  .foot-base a{color:var(--muted); text-decoration:none;}
+  .foot-base a:hover{color:var(--txt);}
+
+  @media (max-width: 1100px){
+    .top3{grid-template-columns:1fr 1fr;}
+    .top-card:last-child{grid-column:1/-1;}
   }
-  /* ===== 모바일 최적화 ===== */
+  @media (max-width: 900px){
+    main{flex-direction:column;}
+    #mapWrap{min-height:440px;}
+    aside{max-width:none; max-height:none;}
+    .tips{grid-template-columns:1fr;}
+  }
   @media (max-width: 768px){
-    header{padding:14px 14px 10px; gap:10px;}
-    header h1{font-size:19px;}
-    header p{font-size:12px;}
-    .moon-chip{margin-left:0; font-size:12px; padding:6px 12px;}
-    #top3{flex-wrap:nowrap; overflow-x:auto; padding:4px 14px 10px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;}
-    .top-card{min-width:210px; flex-shrink:0; scroll-snap-align:start;}
-    #filters{flex-wrap:nowrap; overflow-x:auto; padding:0 14px 10px; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+    .topbar{padding:14px 14px 10px; gap:10px;}
+    .brand h1{font-size:19px;}
+    .tabs{order:3; width:100%; overflow-x:auto; scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{flex-shrink:0;}
+    .top-right{margin-left:0;}
+    .alertbar{margin:2px 14px 0; font-size:12px;}
+    .alert-right{margin-left:0;}
+    .sec{padding:16px 14px 0;}
+    .top3{display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:4px;}
+    .top-card{min-width:250px; flex-shrink:0; scroll-snap-align:start;}
+    #filters{flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:4px;}
     #filters::-webkit-scrollbar{display:none;}
-    #filters button{flex-shrink:0; padding:10px 18px; font-size:14px;}
-    main{padding:0 12px;}
+    .fbtn{flex-shrink:0; padding:10px 16px;}
+    main{padding:14px 12px 0;}
     #mapWrap{min-height:430px;}
-    aside{padding:14px;}
-    .wx-grid{grid-template-columns:repeat(2,1fr);}
-    .wx-grid div{padding:10px 4px; font-size:14px;}
-    .star-box .score{font-size:34px;}
-    .legend{padding:8px 14px; font-size:11px; gap:10px;}
-    footer{padding:8px 14px 16px;}
-    .navi-btn{display:block; text-align:center; padding:12px 16px; font-size:14px;}
-    .retry{padding:10px 22px; font-size:14px;}
+    .wx4{grid-template-columns:1fr 1fr;}
+    .foot-pills{padding:0 14px;}
+    .foot-base{padding:14px;}
   }
 </style>
 </head>
 <body>
 <div id="errbar"></div>
 <script>
-/* 부팅 에러 감지 */
 window.addEventListener("error", function(e){
   var bar = document.getElementById("errbar");
   if(!bar || bar.dataset.shown) return;
@@ -108,113 +203,142 @@ window.addEventListener("error", function(e){
   bar.textContent = "⚠️ 화면을 불러오는 중 문제가 생겼어요: " + (e.message || "알 수 없는 오류");
 }, true);
 </script>
-<header>
-  <h1><span class="star">★</span> 차박 지도</h1>
-  <div class="moon-chip" id="moonChip">달 정보 불러오는 중…</div>
-  <p>전국 차박 스팟 50곳 · 실시간 날씨(Open-Meteo) · 오늘 밤 별보기 지수 — 지도의 점을 눌러보세요</p>
+
+<header class="topbar">
+  <div class="brand">
+    <h1><span class="st">★</span> 차박 지도 <span class="habak-badge">Habak Map</span></h1>
+    <p>전국 50개 차박지 · 실시간 별보기 지수 &amp; 날씨 레이더</p>
+  </div>
+  <nav class="tabs">
+    <a class="tab on" href="#top3sec">오늘의 별지수 TOP</a>
+    <a class="tab" href="#filtersec">지역별 스팟 탐색</a>
+    <a class="tab" href="#mapsec">은하수 레이더</a>
+    <a class="tab" href="#tips">차박 꿀팁 &amp; 에티켓</a>
+  </nav>
+  <div class="top-right">
+    <div class="moon-chip" id="moonChip">달 정보 불러오는 중…</div>
+    <div class="live-chip">Open-Meteo 가동중 🚀</div>
+  </div>
 </header>
 
-<div id="top3"></div>
-
-<div id="filters">
-  <button data-f="all" class="on">전체</button>
-  <button data-f="동해안">동해안</button>
-  <button data-f="서해안">서해안</button>
-  <button data-f="남해안">남해안</button>
-  <button data-f="내륙·산">내륙·산</button>
-  <button data-f="제주">제주</button>
+<div class="alertbar">
+  <span class="pulse"></span><span class="live-tag">LIVE 레이더</span>
+  <span class="alert-msg" id="romanceAlert">별빛 레이더를 가동하는 중…</span>
+  <span class="alert-right"><span id="alertMoon"></span><span class="sync">Open-Meteo 동기화</span></span>
 </div>
 
-<main>
-  <div id="mapWrap">
-    <svg id="kmap" viewBox="0 0 700 600" role="img" aria-label="대한민국 차박 스팟 지도">
-      <rect x="0" y="0" width="700" height="600" fill="#0d1330"/>
-      <g id="grat"></g>
-      <g id="land"></g>
-      <g id="spotLayer"></g>
-    </svg>
+<section id="top3sec" class="sec">
+  <div class="sec-head">
+    <h2>🏆 오늘 밤 별보기 명예의 전당 TOP 3</h2>
+    <span class="sec-sub">— 오늘 밤 돗자리 펼 각도 100%!</span>
+    <span class="sec-right" id="top3note"></span>
   </div>
-  <aside id="panel"><div class="empty">🗺️<br>지도의 점을 누르면<br>실시간 날씨와 별보기 지수를 보여드려요</div></aside>
+  <div id="top3" class="top3"><div class="loading">50곳의 오늘 밤 하늘을 읽는 중…</div></div>
+</section>
+
+<section id="filtersec" class="sec">
+  <div id="filters"></div>
+  <div style="margin-top:10px;"><span id="regionFit"></span></div>
+</section>
+
+<main id="mapsec">
+  <div id="mapWrap">
+    <div class="map-head">
+      <div>
+        <h2>🧭 대한민국 밤하늘 탐촉 레이더</h2>
+        <p>지도의 마커를 클릭하여 실시간 별지수와 차박 명당 팁을 확인하세요</p>
+      </div>
+      <div class="map-head-right">
+        <span class="src-badge">Natural Earth 50m</span>
+        <button class="ghost-btn" id="resetView">지도 전체보기</button>
+      </div>
+    </div>
+    <div class="map-body">
+      <svg id="kmap" viewBox="0 0 700 600" role="img" aria-label="대한민국 차박 스팟 지도">
+        <rect x="0" y="0" width="700" height="600" fill="#0b1130"/>
+        <g id="grat"></g>
+        <g id="land"></g>
+        <g id="rlabels"></g>
+        <g id="spotLayer"></g>
+      </svg>
+      <div class="zoomctl">
+        <button id="zin" aria-label="확대">+</button>
+        <button id="zout" aria-label="축소">−</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="dot" style="background:#34d399"></i>별 쏟아짐 (70+)</span>
+      <span><i class="dot" style="background:#fbbf24"></i>별이랑 밀당 중 (40~69)</span>
+      <span><i class="dot" style="background:#f87171"></i>구름 이불 덮음 (~39)</span>
+      <span><i class="dot" style="background:#9ca3af"></i>Open-Meteo 동기화 중</span>
+    </div>
+    <div class="maptip">
+      <span>💡 팁: 지도의 초록 마커는 오늘 밤 구름 10% 이하로 은하수 관측 확률 90% 이상입니다.</span>
+      <span class="r">Open-Meteo 실시간 동기화</span>
+    </div>
+  </div>
+  <aside id="panel"><div class="empty">🗺️<br>지도의 마커를 누르면<br>실시간 날씨와 별보기 지수를 보여드려요</div></aside>
 </main>
 
-<div class="legend">
-  <span><i class="dot" style="background:#4ade80"></i>별보기 좋음 (70+)</span>
-  <span><i class="dot" style="background:#facc15"></i>보통 (40~69)</span>
-  <span><i class="dot" style="background:#f87171"></i>아쉬움 (~39)</span>
-  <span><i class="dot" style="background:#9ca3af"></i>날씨 불러오는 중</span>
-</div>
+<section id="tips" class="sec">
+  <div class="sec-head"><h2>🏕️ 차박 꿀팁 &amp; 에티켓</h2><span class="sec-sub">— 별 보러 갔다가 민폐 차박러 되지 않기</span></div>
+  <div class="tips">
+    <div class="tip"><span class="ti">🎒</span><div><b>LNT 클린 차박 십계명 1조</b><p>"머문 자리는 처음부터 당신이 오지 않았던 것처럼!" 쓰레기는 한 조각도 남김없이 트렁크에 챙겨 돌아가기 약속!</p></div></div>
+    <div class="tip"><span class="ti">🔦</span><div><b>야간 랜턴 매너 &amp; 붉은빛 사용</b><p>옆 차박러의 은하수 사진 노출을 방해하지 않도록 헤드라이트는 끄고, 최소한의 붉은색 조명이나 은은한 무드등을 권장해요.</p></div></div>
+    <div class="tip"><span class="ti">🔥</span><div><b>불멍 &amp; 화로대 지면 보호</b><p>지정된 허용 구역에서만 화톳대 받침대를 받치고 사용하세요. 잔불은 완전히 끄고 재는 종량제 봉투에 안전히 수거합니다.</p></div></div>
+  </div>
+</section>
 
 <footer>
-  · 별보기 지수 = 오늘 밤(18시~익일 5시) 평균 구름량 + 달 밝기로 계산한 추정치예요.<br>
-  · 노지 차박 가능 여부·화장실·취사 규정은 지자체와 현장 상황에 따라 달라져요. 출발 전 현장 안내를 꼭 확인하세요. 쓰레기는 되가져가기! 🏕️<br>
-  · 지형: Natural Earth 50m 데이터를 단순화해 내장했어요. 외부 지도 타일을 쓰지 않아 미리보기에서도 표시됩니다.
+  <div class="foot-pills">
+    <span>🔭 별보기 지수는 <b>오늘 밤(18시~05시) 평균 구름량</b>과 달 밝기로 계산된 과학적인 낭만 추정치!</span>
+    <span>🏕️ 노지 차박 에티켓: 클린 차박 필수! 쓰레기는 트렁크에 챙겨가기</span>
+    <span>Natural Earth 기반 벡터 지도 &amp; 실시간 기상 관측망 동기화</span>
+  </div>
+  <div class="foot-base">
+    <span><b style="color:var(--accent)">★ 차박 지도</b> © 2026 Habak Map. 별 볼 일 많은 오늘 밤의 동반자.</span>
+    <span class="fl"><a href="#tips">에티켓 가이드북</a><a href="#filtersec">스팟 정보 등록 제안</a><a href="https://open-meteo.com" target="_blank" rel="noopener">천문 데이터 소스</a></span>
+  </div>
 </footer>
 
 <script>
 const KOREA_RINGS = [[[126.634, 37.782], [126.665, 37.801], [126.667, 37.917], [126.754, 37.979], [127.01, 38.241], [127.09, 38.284], [127.17, 38.305], [127.294, 38.313], [127.533, 38.305], [127.746, 38.319], [127.905, 38.3], [128.039, 38.309], [128.169, 38.359], [128.223, 38.417], [128.339, 38.608], [128.375, 38.623], [128.619, 38.176], [128.852, 37.887], [129.052, 37.678], [129.335, 37.275], [129.418, 37.059], [129.426, 36.926], [129.473, 36.742], [129.433, 36.637], [129.445, 36.471], [129.427, 36.385], [129.393, 36.323], [129.404, 36.052], [129.426, 36.019], [129.458, 36.006], [129.51, 36.038], [129.573, 36.051], [129.562, 35.948], [129.419, 35.498], [129.329, 35.333], [129.214, 35.182], [129.077, 35.123], [128.98, 35.102], [128.796, 35.094], [128.643, 35.12], [128.511, 35.101], [128.458, 35.069], [128.419, 35.016], [128.448, 34.932], [128.444, 34.87], [128.388, 34.875], [128.276, 34.911], [128.152, 34.916], [128.095, 34.934], [128.036, 35.022], [127.977, 35.019], [127.873, 34.966], [127.715, 34.955], [127.659, 34.926], [127.639, 34.89], [127.662, 34.843], [127.742, 34.783], [127.715, 34.721], [127.632, 34.69], [127.565, 34.766], [127.524, 34.84], [127.477, 34.844], [127.404, 34.823], [127.39, 34.743], [127.479, 34.625], [127.401, 34.553], [127.381, 34.501], [127.325, 34.463], [127.173, 34.546], [127.195, 34.605], [127.261, 34.662], [127.269, 34.72], [127.247, 34.755], [127.031, 34.607], [126.897, 34.439], [126.826, 34.451], [126.796, 34.494], [126.755, 34.512], [126.611, 34.404], [126.584, 34.318], [126.531, 34.314], [126.508, 34.351], [126.506, 34.428], [126.482, 34.494], [126.333, 34.59], [126.264, 34.673], [126.301, 34.72], [126.426, 34.695], [126.525, 34.698], [126.505, 34.738], [126.473, 34.756], [126.539, 34.779], [126.593, 34.824], [126.548, 34.837], [126.479, 34.81], [126.421, 34.823], [126.398, 34.933], [126.327, 35.045], [126.291, 35.154], [126.361, 35.217], [126.46, 35.456], [126.493, 35.501], [126.582, 35.534], [126.614, 35.571], [126.487, 35.606], [126.488, 35.647], [126.717, 35.769], [126.753, 35.872], [126.72, 35.898], [126.647, 35.922], [126.664, 35.975], [126.693, 36.014], [126.682, 36.038], [126.54, 36.166], [126.557, 36.236], [126.544, 36.341], [126.548, 36.478], [126.507, 36.586], [126.488, 36.694], [126.389, 36.651], [126.181, 36.692], [126.161, 36.772], [126.217, 36.871], [126.352, 36.958], [126.429, 36.969], [126.487, 37.007], [126.578, 37.02], [126.687, 36.96], [126.784, 36.948], [126.839, 36.846], [126.872, 36.824], [126.879, 36.862], [126.958, 36.906], [126.977, 36.939], [126.96, 36.958], [126.869, 36.976], [126.787, 37.103], [126.776, 37.158], [126.746, 37.194], [126.791, 37.295], [126.696, 37.411], [126.65, 37.447], [126.657, 37.551], [126.58, 37.654], [126.563, 37.717], [126.578, 37.745], [126.621, 37.755], [126.634, 37.782]], [[128.741, 34.799], [128.647, 34.737], [128.52, 34.82], [128.489, 34.865], [128.586, 34.932], [128.668, 35.009], [128.722, 35.014], [128.741, 34.799]], [[128.066, 34.806], [128.055, 34.708], [127.984, 34.703], [127.942, 34.766], [127.897, 34.735], [127.873, 34.735], [127.838, 34.813], [127.832, 34.875], [127.915, 34.921], [127.966, 34.893], [128.038, 34.879], [128.066, 34.806]], [[126.234, 34.371], [126.17, 34.355], [126.109, 34.399], [126.123, 34.444], [126.247, 34.563], [126.344, 34.545], [126.38, 34.498], [126.335, 34.426], [126.234, 34.371]], [[126.521, 37.737], [126.516, 37.605], [126.461, 37.61], [126.423, 37.624], [126.407, 37.649], [126.369, 37.772], [126.412, 37.823], [126.494, 37.783], [126.521, 37.737]], [[126.753, 34.344], [126.77, 34.296], [126.689, 34.305], [126.646, 34.351], [126.652, 34.39], [126.7, 34.396], [126.753, 34.344]], [[126.418, 36.493], [126.404, 36.428], [126.338, 36.471], [126.319, 36.613], [126.387, 36.571], [126.418, 36.493]], [[126.172, 34.731], [126.159, 34.707], [126.115, 34.714], [126.071, 34.783], [126.052, 34.838], [126.008, 34.867], [126.078, 34.915], [126.169, 34.83], [126.172, 34.731]], [[130.916, 37.478], [130.871, 37.449], [130.817, 37.478], [130.81, 37.51], [130.838, 37.537], [130.904, 37.554], [130.934, 37.53], [130.916, 37.478]], [[126.327, 33.224], [126.282, 33.202], [126.24, 33.215], [126.166, 33.312], [126.199, 33.368], [126.338, 33.46], [126.696, 33.549], [126.76, 33.553], [126.901, 33.515], [126.931, 33.444], [126.873, 33.341], [126.709, 33.272], [126.582, 33.238], [126.327, 33.224]]];
 
-/* ============ 0. 달 정보: 가장 먼저, 네트워크와 무관하게 표시 ============ */
+/* ============ 0. 달 정보: 가장 먼저 ============ */
 (function renderMoonFirst(){
   try{
     var m = moonInfo(new Date());
     document.getElementById("moonChip").innerHTML =
-      m.emoji + " <b>" + m.name + "</b> · 달 밝기 " + Math.round(m.illum*100) + "%";
+      "🌙 <b>" + m.name + " " + Math.round(m.illum*100) + "%</b>" + (m.illum < 0.4 ? " (별보기 최적기)" : "");
   }catch(e){
     document.getElementById("moonChip").textContent = "달 정보를 계산하지 못했어요";
   }
 })();
 
-const SPOTS = [
-  {name:"삼포해변", region:"동해안", type:"바다", lat:38.3148, lng:128.5349, ox:0.0, oy:0.0, addr:"강원특별자치도 고성군 죽왕면 송암리", navi:"https://map.kakao.com/link/search/%EC%82%BC%ED%8F%AC%ED%95%B4%EB%B3%80", desc:"에메랄드빛 얕은 바다와 한적함으로 유명한 동해 차박 1순위. 아침에 트렁크를 열면 일출이 첫 화면.", toilet:"있음 (여름 샤워장 운영)", cooking:"주변 확인 필요", note:""},
-  {name:"안목해변", region:"동해안", type:"바다", lat:37.7736, lng:128.9454, ox:0.0, oy:0.0, addr:"강원특별자치도 강릉시", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%AA%A9%ED%95%B4%EB%B3%80", desc:"커피거리와 바다뷰를 동시에 즐기는 곳. 도심 접근성이 좋아 초보 차박러에게 추천.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"후포해수욕장", region:"동해안", type:"바다", lat:36.6759, lng:129.4441, ox:1.5, oy:-3.4, addr:"경상북도 울진군 후포면 후포리", navi:"https://map.kakao.com/link/search/%ED%9B%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"남으로 내려갈수록 한적해지는 동해. 여름 성수기에도 비교적 덜 붐비는 해변.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"영덕 해맞이공원", region:"동해안", type:"바다", lat:36.4274, lng:129.4353, ox:0.0, oy:0.0, addr:"경상북도 영덕군 영덕읍 대탄리", navi:"https://map.kakao.com/link/search/%EC%98%81%EB%8D%95%20%ED%95%B4%EB%A7%9E%EC%9D%B4%EA%B3%B5%EC%9B%90", desc:"동해 일출을 정면으로 보는 공원 주차장 차박. 늘어선 풍력발전기가 이색적인 풍경.", toilet:"있음", cooking:"취사 제한적", note:""},
-  {name:"안반데기", region:"내륙·산", type:"산·고원", lat:37.6228, lng:128.7504, ox:0.0, oy:0.0, addr:"강원특별자치도 강릉시 왕산면", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%B0%98%EB%8D%B0%EA%B8%B0", desc:"해발 1,100m 고랭지 마을. 풍력발전기와 배추밭 위로 펼쳐지는 은하수 성지.", toilet:"있음 (공영주차장 인근)", cooking:"주의 필요", note:"정식 자동차야영장이 아니에요. 차량 숙박·취사 전 현장 이용 규정을 꼭 확인하세요."},
-  {name:"별마로천문대", region:"내륙·산", type:"산·고원", lat:37.1934, lng:128.4955, ox:0.0, oy:0.0, addr:"강원특별자치도 영월군 영월읍 덕포리", navi:"https://map.kakao.com/link/search/%EB%B3%84%EB%A7%88%EB%A1%9C%EC%B2%9C%EB%AC%B8%EB%8C%80", desc:"국내 최저 수준의 빛공해. 봉래산 정상까지 차로 오르는 천문 차박의 성지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"민둥산", region:"내륙·산", type:"산·고원", lat:37.2436, lng:128.7736, ox:0.0, oy:0.0, addr:"강원특별자치도 정선군 남면 무릉리", navi:"https://map.kakao.com/link/search/%EB%AF%BC%EB%91%A5%EC%82%B0", desc:"고원 지대라 여름에도 서늘한 산악 차박지. 가을 억새 시즌 풍경이 일품.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"도담삼봉", region:"내륙·산", type:"강·호수", lat:37.0001, lng:128.3439, ox:0.0, oy:0.0, addr:"충청북도 단양군 하괴리", navi:"https://map.kakao.com/link/search/%EB%8F%84%EB%8B%B4%EC%82%BC%EB%B4%89", desc:"남한강과 기암괴석이 어우러진 강변 노지. 단양팔경의 중심.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"수주팔봉", region:"내륙·산", type:"강·호수", lat:36.9064, lng:127.9343, ox:0.0, oy:0.0, addr:"충청북도 충주시", navi:"https://map.kakao.com/link/search/%EC%88%98%EC%A3%BC%ED%8C%94%EB%B4%89", desc:"충주호반 드라이브 코스의 노지 포인트. 탁 트인 호수 뷰.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"적상산", region:"내륙·산", type:"산·고원", lat:35.9464, lng:127.6902, ox:0.0, oy:0.0, addr:"전북특별자치도 무주군 적상면", navi:"https://map.kakao.com/link/search/%EC%A0%81%EC%83%81%EC%82%B0", desc:"산정호수와 가을 단풍으로 유명한 산악 차박지. 적상산 사고(史庫)도 함께.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"꽃지해수욕장", region:"서해안", type:"바다", lat:36.4871, lng:126.3355, ox:0.0, oy:0.0, addr:"충청남도 태안군 안면읍", navi:"https://map.kakao.com/link/search/%EA%BD%83%EC%A7%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"할미·할아비 바위와 서해 일몰의 정석. 안면도 대표 차박지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"몽산포해변", region:"서해안", type:"바다", lat:36.6737, lng:126.2922, ox:0.0, oy:0.0, addr:"충청남도 태안군 남면", navi:"https://map.kakao.com/link/search/%EB%AA%BD%EC%82%B0%ED%8F%AC%ED%95%B4%EB%B3%80", desc:"울창한 솔숲 사이로 차를 대는 숲속 차박. 여름에도 시원한 그늘.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"무창포해수욕장", region:"서해안", type:"바다", lat:36.2448, lng:126.5361, ox:1.5, oy:4.2, addr:"충청남도 보령시 관당리", navi:"https://map.kakao.com/link/search/%EB%AC%B4%EC%B0%BD%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"신비의 바닷길이 열리는 날에 맞춰 가면 특별한 경험. 물때표 확인 필수.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"마시안해변", region:"서해안", type:"바다", lat:37.4276, lng:126.4187, ox:5.1, oy:2.1, addr:"인천광역시 영종구 용유동", navi:"https://map.kakao.com/link/search/%EB%A7%88%EC%8B%9C%EC%95%88%ED%95%B4%EB%B3%80", desc:"수도권에서 가까운 낙조 명소. 갯벌과 방조제 드라이브 코스.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"변산해수욕장", region:"서해안", type:"바다", lat:35.6803, lng:126.5311, ox:-1.2, oy:-1.4, addr:"전북특별자치도 부안군 대항리", navi:"https://map.kakao.com/link/search/%EB%B3%80%EC%82%B0%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서해 최고의 노을 명소 중 하나. 변산반도국립공원과 함께 즐기기.", toilet:"있음", cooking:"취사 제한적", note:"국립공원 인접 구역은 취사·야영 규정을 확인하세요."},
-  {name:"증도", region:"서해안", type:"바다", lat:34.9868, lng:126.161, ox:0.0, oy:0.0, addr:"전라남도 신안군 증도면", navi:"https://map.kakao.com/link/search/%EC%A6%9D%EB%8F%84", desc:"유네스코 생물권 보전지역 갯벌. 태평염전과 짱뚱어다리까지.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"학동몽돌해수욕장", region:"남해안", type:"바다", lat:34.7733, lng:128.6406, ox:-4.1, oy:2.8, addr:"경상남도 거제시 동부면", navi:"https://map.kakao.com/link/search/%ED%95%99%EB%8F%99%EB%AA%BD%EB%8F%8C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"몽돌 굴러가는 소리가 자장가. 파도 소리 ASMR 차박.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"만성리해수욕장", region:"남해안", type:"바다", lat:34.7775, lng:127.7451, ox:0.0, oy:0.0, addr:"전라남도 여수시", navi:"https://map.kakao.com/link/search/%EB%A7%8C%EC%84%B1%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"검은모래의 이국적 분위기 + 여수 밤바다 야경까지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"김녕해수욕장", region:"제주", type:"바다", lat:33.5558, lng:126.7603, ox:3.4, oy:-0.5, addr:"제주특별자치도 제주시 구좌읍 김녕리", navi:"https://map.kakao.com/link/search/%EA%B9%80%EB%85%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"코발트빛 바다. 월정리·세화와 묶어 즐기는 제주 동부 코스.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
-  {name:"방아머리해변", region:"서해안", type:"바다", lat:37.2875, lng:126.5741, ox:0.0, oy:0.0, addr:"경기도 안산시 단원구 대부동", navi:"https://map.kakao.com/link/search/%EB%B0%A9%EC%95%84%EB%A8%B8%EB%A6%AC%ED%95%B4%EB%B3%80", desc:"대부도 대표 해변. 갯벌 체험과 서해 낙조.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"을왕리해수욕장", region:"서해안", type:"바다", lat:37.4469, lng:126.3724, ox:-5.1, oy:-2.1, addr:"인천광역시 중구 을왕동", navi:"https://map.kakao.com/link/search/%EC%9D%84%EC%99%95%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"수도권 대표 낙조 해변. 을왕산 둘레길과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"석모도 만남의광장", region:"서해안", type:"바다", lat:37.6978, lng:126.3142, ox:0.0, oy:0.0, addr:"인천광역시 강화군 삼산면 석포리", navi:"https://map.kakao.com/link/search/%EC%84%9D%EB%AA%A8%EB%8F%84%20%EB%A7%8C%EB%82%A8%EC%9D%98%EA%B4%91%EC%9E%A5", desc:"석모대교 뷰 공영주차장. 한적한 스텔스 차박 명소.", toilet:"있음(동절기 확인 필요)", cooking:"취사 자제", note:"주차요금 2,000원. 조용한 스텔스 차박 권장."},
-  {name:"속초해수욕장", region:"동해안", type:"바다", lat:38.1881, lng:128.6057, ox:0.0, oy:0.0, addr:"강원특별자치도 속초시", navi:"https://map.kakao.com/link/search/%EC%86%8D%EC%B4%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"동해 대표 해변. 속초 시내·중앙시장 접근성 최고.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"하조대해변", region:"동해안", type:"바다", lat:38.0201, lng:128.7235, ox:0.0, oy:0.0, addr:"강원특별자치도 양양군 현북면 하광정리", navi:"https://map.kakao.com/link/search/%ED%95%98%EC%A1%B0%EB%8C%80%ED%95%B4%EB%B3%80", desc:"하조대 등대와 기암괴석. 서퍼들의 한적한 해변.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"화진포해수욕장", region:"동해안", type:"바다", lat:38.4783, lng:128.4386, ox:0.0, oy:0.0, addr:"강원특별자치도 고성군 거진읍 화포리", navi:"https://map.kakao.com/link/search/%ED%99%94%EC%A7%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"화진포 호수와 해변. 역사 유적과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"대천해수욕장", region:"서해안", type:"바다", lat:36.3113, lng:126.5127, ox:-1.5, oy:-4.2, addr:"충청남도 보령시", navi:"https://map.kakao.com/link/search/%EB%8C%80%EC%B2%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서해안 최대 해변. 머드축제의 고장.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"의림지", region:"내륙·산", type:"강·호수", lat:37.1732, lng:128.2106, ox:0.0, oy:0.0, addr:"충청북도 제천시", navi:"https://map.kakao.com/link/search/%EC%9D%98%EB%A6%BC%EC%A7%80", desc:"삼한시대 저수지. 제림 솔숲 산책로.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"선유도해수욕장", region:"서해안", type:"바다", lat:35.8181, lng:126.412, ox:0.0, oy:0.0, addr:"전북특별자치도 군산시 옥도면", navi:"https://map.kakao.com/link/search/%EC%84%A0%EC%9C%A0%EB%8F%84%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"고군산군도. 선유8경의 섬 바다.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"땅끝마을", region:"남해안", type:"바다", lat:34.2984, lng:126.5294, ox:0.0, oy:0.0, addr:"전라남도 해남군 송호리", navi:"https://map.kakao.com/link/search/%EB%95%85%EB%81%9D%EB%A7%88%EC%9D%84", desc:"한반도 최남단. 땅끝탑 일출·일몰.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"순천만습지", region:"남해안", type:"바다", lat:34.8852, lng:127.5103, ox:0.0, oy:0.0, addr:"전라남도 순천시 선학리", navi:"https://map.kakao.com/link/search/%EC%88%9C%EC%B2%9C%EB%A7%8C%EC%8A%B5%EC%A7%80", desc:"갈대밭과 흑두루미. 와온해변 낙조와 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"영일대해수욕장", region:"동해안", type:"바다", lat:36.056, lng:129.3778, ox:0.0, oy:0.0, addr:"경상북도 포항시 북구 두호동", navi:"https://map.kakao.com/link/search/%EC%98%81%EC%9D%BC%EB%8C%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"포항 대표 해변. 영일대 누각 야경.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"다대포해수욕장", region:"남해안", type:"바다", lat:35.0482, lng:128.966, ox:0.0, oy:0.0, addr:"부산광역시 사하구 다대동", navi:"https://map.kakao.com/link/search/%EB%8B%A4%EB%8C%80%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"낙조 명소. 꿈의 낙조분수.", toilet:"있음", cooking:"취사 제한적", note:"도심 해변 — 야간 주차 규정 확인."},
-  {name:"진하해수욕장", region:"동해안", type:"바다", lat:35.3833, lng:129.3457, ox:-1.6, oy:-13.6, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EC%A7%84%ED%95%98%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"울산 대표 해변. 서생포왜성과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"솔개해수욕장", region:"동해안", type:"바다", lat:35.3744, lng:129.3458, ox:1.7, oy:15.2, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EC%86%94%EA%B0%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"진하 옆 한적한 해변. 스노클링 명소.", toilet:"있음(공중화장실)", cooking:"주변 확인 필요", note:""},
-  {name:"정자항", region:"동해안", type:"바다", lat:35.6166, lng:129.4522, ox:0.0, oy:0.0, addr:"울산광역시 북구", navi:"https://map.kakao.com/link/search/%EC%A0%95%EC%9E%90%ED%95%AD", desc:"등대와 방파제. 노지 차박 후기 다수.", toilet:"있음", cooking:"취사 제한적", note:""},
-  {name:"구조라해수욕장", region:"남해안", type:"바다", lat:34.8081, lng:128.6917, ox:4.1, oy:-2.8, addr:"경상남도 거제시 일운면", navi:"https://map.kakao.com/link/search/%EA%B5%AC%EC%A1%B0%EB%9D%BC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"거제 대표 해변. 외도 보타니아와 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"함덕해수욕장", region:"제주", type:"바다", lat:33.5432, lng:126.6699, ox:-3.4, oy:0.5, addr:"제주특별자치도 제주시 조천읍 함덕리", navi:"https://map.kakao.com/link/search/%ED%95%A8%EB%8D%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"에메랄드빛 바다. 서우봉 둘레길.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
-  {name:"협재해수욕장", region:"제주", type:"바다", lat:33.3933, lng:126.2389, ox:0.0, oy:0.0, addr:"제주특별자치도 제주시 한림읍 협재리", navi:"https://map.kakao.com/link/search/%ED%98%91%EC%9E%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"비양도 뷰. 제주 서부 대표 해변.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
-  {name:"안동호", region:"내륙·산", type:"강·호수", lat:36.6358, lng:128.8479, ox:0.0, oy:0.0, addr:"경상북도 안동시", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%8F%99%ED%98%B8", desc:"안동댐 호반. 월영교 야경 드라이브.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"대청호", region:"내륙·산", type:"강·호수", lat:36.4186, lng:127.4971, ox:0.0, oy:0.0, addr:"충청북도 보은군", navi:"https://map.kakao.com/link/search/%EB%8C%80%EC%B2%AD%ED%98%B8", desc:"대청댐 호반 드라이브. 벚꽃 시즌 명소.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"소양호", region:"내륙·산", type:"강·호수", lat:37.9927, lng:128.0533, ox:0.0, oy:0.0, addr:"강원특별자치도 인제군 남면", navi:"https://map.kakao.com/link/search/%EC%86%8C%EC%96%91%ED%98%B8", desc:"소양강댐 호반. 처녀뱃사공 노래비.", toilet:"확인 필요", cooking:"확인 필요", note:""},
-  {name:"구룡포해수욕장", region:"동해안", type:"바다", lat:35.9725, lng:129.548, ox:0.0, oy:0.0, addr:"경상북도 포항시 남구 구룡포읍", navi:"https://map.kakao.com/link/search/%EA%B5%AC%EB%A3%A1%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"일본인 가옥거리와 과메기의 고장.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"감포항", region:"동해안", type:"바다", lat:35.8042, lng:129.5026, ox:0.0, oy:0.0, addr:"경상북도 경주시 감포읍", navi:"https://map.kakao.com/link/search/%EA%B0%90%ED%8F%AC%ED%95%AD", desc:"경주 동해안 항구. 문무대왕릉 인근.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"송정해수욕장", region:"남해안", type:"바다", lat:35.1777, lng:129.1986, ox:-0.8, oy:4.0, addr:"부산광역시 해운대구 송정동", navi:"https://map.kakao.com/link/search/%EC%86%A1%EC%A0%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서핑 명소. 해운대 옆 한적함.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"고래불해수욕장", region:"동해안", type:"바다", lat:36.5972, lng:129.4105, ox:-1.5, oy:3.4, addr:"경상북도 영덕군 병곡면", navi:"https://map.kakao.com/link/search/%EA%B3%A0%EB%9E%98%EB%B6%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"영덕 대표 해변. 국민야영장 인근.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"일광해수욕장", region:"남해안", type:"바다", lat:35.2611, lng:129.2337, ox:-1.1, oy:-3.3, addr:"부산광역시 기장군 일광읍", navi:"https://map.kakao.com/link/search/%EC%9D%BC%EA%B4%91%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"기장 대표 해변. 일광산과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
-  {name:"황매산", region:"내륙·산", type:"산·고원", lat:35.4942, lng:127.9746, ox:0.0, oy:0.0, addr:"경상남도 합천군 대병면", navi:"https://map.kakao.com/link/search/%ED%99%A9%EB%A7%A4%EC%82%B0", desc:"오토캠핑 구역이 갖춰진 고원. 봄 철쭉, 가을 억새 군락이 장관.", toilet:"있음", cooking:"가능 (지정 구역)", note:""},
-  {name:"동막해변", region:"서해안", type:"바다", lat:37.5921, lng:126.459, ox:0.0, oy:0.0, addr:"인천광역시 강화군 화도면", navi:"https://map.kakao.com/link/search/%EB%8F%99%EB%A7%89%ED%95%B4%EB%B3%80", desc:"소나무숲 야영구역과 광활한 갯벌. 강화 대표 낙조 명소.", toilet:"있음", cooking:"유료 야영구역 이용", note:"소나무밭 야영구역은 유료 운영(7~10월). 규정 확인."},
-  {name:"곰소항", region:"서해안", type:"바다", lat:35.5861, lng:126.6096, ox:1.2, oy:1.4, addr:"전북특별자치도 부안군 곰소리", navi:"https://map.kakao.com/link/search/%EA%B3%B0%EC%86%8C%ED%95%AD", desc:"젓갈로 유명한 항구. 곰소염전과 함께 둘러보기.", toilet:"있음", cooking:"가능", note:""},
-  {name:"간절곶", region:"동해안", type:"바다", lat:35.3592, lng:129.3618, ox:1.8, oy:-2.2, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EA%B0%84%EC%A0%88%EA%B3%B6", desc:"한반도에서 해가 가장 먼저 뜨는 곳. 간절곶 등대와 소망우체통.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+const SPOTS = [{"name": "삼포해변", "region": "동해안", "type": "바다", "lat": 38.3148, "lng": 128.5349, "ox": 0, "oy": 0, "addr": "강원특별자치도 고성군 죽왕면 송암리", "navi": "https://map.kakao.com/link/search/%EC%82%BC%ED%8F%AC%ED%95%B4%EB%B3%80", "desc": "에메랄드빛 얕은 바다와 한적함으로 유명한 동해 차박 1순위. 아침에 트렁크를 열면 일출이 첫 화면.", "toilet": "있음 (여름 샤워장 운영)", "cooking": "주변 확인 필요", "note": ""}, {"name": "안목해변", "region": "동해안", "type": "바다", "lat": 37.7736, "lng": 128.9454, "ox": 0, "oy": 0, "addr": "강원특별자치도 강릉시", "navi": "https://map.kakao.com/link/search/%EC%95%88%EB%AA%A9%ED%95%B4%EB%B3%80", "desc": "커피거리와 바다뷰를 동시에 즐기는 곳. 도심 접근성이 좋아 초보 차박러에게 추천.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "후포해수욕장", "region": "동해안", "type": "바다", "lat": 36.6759, "lng": 129.4441, "ox": 1.5, "oy": -3.4, "addr": "경상북도 울진군 후포면 후포리", "navi": "https://map.kakao.com/link/search/%ED%9B%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "남으로 내려갈수록 한적해지는 동해. 여름 성수기에도 비교적 덜 붐비는 해변.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "영덕 해맞이공원", "region": "동해안", "type": "바다", "lat": 36.4274, "lng": 129.4353, "ox": 0, "oy": 0, "addr": "경상북도 영덕군 영덕읍 대탄리", "navi": "https://map.kakao.com/link/search/%EC%98%81%EB%8D%95%20%ED%95%B4%EB%A7%9E%EC%9D%B4%EA%B3%B5%EC%9B%90", "desc": "동해 일출을 정면으로 보는 공원 주차장 차박. 늘어선 풍력발전기가 이색적인 풍경.", "toilet": "있음", "cooking": "취사 제한적", "note": ""}, {"name": "안반데기", "region": "내륙·산", "type": "산·고원", "lat": 37.6228, "lng": 128.7504, "ox": 0, "oy": 0, "addr": "강원특별자치도 강릉시 왕산면", "navi": "https://map.kakao.com/link/search/%EC%95%88%EB%B0%98%EB%8D%B0%EA%B8%B0", "desc": "해발 1,100m 고랭지 마을. 풍력발전기와 배추밭 위로 펼쳐지는 은하수 성지.", "toilet": "있음 (공영주차장 인근)", "cooking": "주의 필요", "note": "정식 자동차야영장이 아니에요. 차량 숙박·취사 전 현장 이용 규정을 꼭 확인하세요."}, {"name": "별마로천문대", "region": "내륙·산", "type": "산·고원", "lat": 37.1934, "lng": 128.4955, "ox": 0, "oy": 0, "addr": "강원특별자치도 영월군 영월읍 덕포리", "navi": "https://map.kakao.com/link/search/%EB%B3%84%EB%A7%88%EB%A1%9C%EC%B2%9C%EB%AC%B8%EB%8C%80", "desc": "국내 최저 수준의 빛공해. 봉래산 정상까지 차로 오르는 천문 차박의 성지.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "민둥산", "region": "내륙·산", "type": "산·고원", "lat": 37.2436, "lng": 128.7736, "ox": 0, "oy": 0, "addr": "강원특별자치도 정선군 남면 무릉리", "navi": "https://map.kakao.com/link/search/%EB%AF%BC%EB%91%A5%EC%82%B0", "desc": "고원 지대라 여름에도 서늘한 산악 차박지. 가을 억새 시즌 풍경이 일품.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "도담삼봉", "region": "내륙·산", "type": "강·호수", "lat": 37.0001, "lng": 128.3439, "ox": 0, "oy": 0, "addr": "충청북도 단양군 하괴리", "navi": "https://map.kakao.com/link/search/%EB%8F%84%EB%8B%B4%EC%82%BC%EB%B4%89", "desc": "남한강과 기암괴석이 어우러진 강변 노지. 단양팔경의 중심.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "수주팔봉", "region": "내륙·산", "type": "강·호수", "lat": 36.9064, "lng": 127.9343, "ox": 0, "oy": 0, "addr": "충청북도 충주시", "navi": "https://map.kakao.com/link/search/%EC%88%98%EC%A3%BC%ED%8C%94%EB%B4%89", "desc": "충주호반 드라이브 코스의 노지 포인트. 탁 트인 호수 뷰.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "적상산", "region": "내륙·산", "type": "산·고원", "lat": 35.9464, "lng": 127.6902, "ox": 0, "oy": 0, "addr": "전북특별자치도 무주군 적상면", "navi": "https://map.kakao.com/link/search/%EC%A0%81%EC%83%81%EC%82%B0", "desc": "산정호수와 가을 단풍으로 유명한 산악 차박지. 적상산 사고(史庫)도 함께.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "꽃지해수욕장", "region": "서해안", "type": "바다", "lat": 36.4871, "lng": 126.3355, "ox": 0, "oy": 0, "addr": "충청남도 태안군 안면읍", "navi": "https://map.kakao.com/link/search/%EA%BD%83%EC%A7%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "할미·할아비 바위와 서해 일몰의 정석. 안면도 대표 차박지.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "몽산포해변", "region": "서해안", "type": "바다", "lat": 36.6737, "lng": 126.2922, "ox": 0, "oy": 0, "addr": "충청남도 태안군 남면", "navi": "https://map.kakao.com/link/search/%EB%AA%BD%EC%82%B0%ED%8F%AC%ED%95%B4%EB%B3%80", "desc": "울창한 솔숲 사이로 차를 대는 숲속 차박. 여름에도 시원한 그늘.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "무창포해수욕장", "region": "서해안", "type": "바다", "lat": 36.2448, "lng": 126.5361, "ox": 1.5, "oy": 4.2, "addr": "충청남도 보령시 관당리", "navi": "https://map.kakao.com/link/search/%EB%AC%B4%EC%B0%BD%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "신비의 바닷길이 열리는 날에 맞춰 가면 특별한 경험. 물때표 확인 필수.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "마시안해변", "region": "서해안", "type": "바다", "lat": 37.4276, "lng": 126.4187, "ox": 5.1, "oy": 2.1, "addr": "인천광역시 영종구 용유동", "navi": "https://map.kakao.com/link/search/%EB%A7%88%EC%8B%9C%EC%95%88%ED%95%B4%EB%B3%80", "desc": "수도권에서 가까운 낙조 명소. 갯벌과 방조제 드라이브 코스.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "변산해수욕장", "region": "서해안", "type": "바다", "lat": 35.6803, "lng": 126.5311, "ox": -1.2, "oy": -1.4, "addr": "전북특별자치도 부안군 대항리", "navi": "https://map.kakao.com/link/search/%EB%B3%80%EC%82%B0%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "서해 최고의 노을 명소 중 하나. 변산반도국립공원과 함께 즐기기.", "toilet": "있음", "cooking": "취사 제한적", "note": "국립공원 인접 구역은 취사·야영 규정을 확인하세요."}, {"name": "증도", "region": "서해안", "type": "바다", "lat": 34.9868, "lng": 126.161, "ox": 0, "oy": 0, "addr": "전라남도 신안군 증도면", "navi": "https://map.kakao.com/link/search/%EC%A6%9D%EB%8F%84", "desc": "유네스코 생물권 보전지역 갯벌. 태평염전과 짱뚱어다리까지.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "학동몽돌해수욕장", "region": "남해안", "type": "바다", "lat": 34.7733, "lng": 128.6406, "ox": -4.1, "oy": 2.8, "addr": "경상남도 거제시 동부면", "navi": "https://map.kakao.com/link/search/%ED%95%99%EB%8F%99%EB%AA%BD%EB%8F%8C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "몽돌 굴러가는 소리가 자장가. 파도 소리 ASMR 차박.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "만성리해수욕장", "region": "남해안", "type": "바다", "lat": 34.7775, "lng": 127.7451, "ox": 0, "oy": 0, "addr": "전라남도 여수시", "navi": "https://map.kakao.com/link/search/%EB%A7%8C%EC%84%B1%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "검은모래의 이국적 분위기 + 여수 밤바다 야경까지.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "김녕해수욕장", "region": "제주", "type": "바다", "lat": 33.5558, "lng": 126.7603, "ox": 3.4, "oy": -0.5, "addr": "제주특별자치도 제주시 구좌읍 김녕리", "navi": "https://map.kakao.com/link/search/%EA%B9%80%EB%85%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "코발트빛 바다. 월정리·세화와 묶어 즐기는 제주 동부 코스.", "toilet": "있음", "cooking": "취사 제한적", "note": "제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."}, {"name": "방아머리해변", "region": "서해안", "type": "바다", "lat": 37.2875, "lng": 126.5741, "ox": 0, "oy": 0, "addr": "경기도 안산시 단원구 대부동", "navi": "https://map.kakao.com/link/search/%EB%B0%A9%EC%95%84%EB%A8%B8%EB%A6%AC%ED%95%B4%EB%B3%80", "desc": "대부도 대표 해변. 갯벌 체험과 서해 낙조.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "을왕리해수욕장", "region": "서해안", "type": "바다", "lat": 37.4469, "lng": 126.3724, "ox": -5.1, "oy": -2.1, "addr": "인천광역시 중구 을왕동", "navi": "https://map.kakao.com/link/search/%EC%9D%84%EC%99%95%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "수도권 대표 낙조 해변. 을왕산 둘레길과 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "석모도 만남의광장", "region": "서해안", "type": "바다", "lat": 37.6978, "lng": 126.3142, "ox": 0, "oy": 0, "addr": "인천광역시 강화군 삼산면 석포리", "navi": "https://map.kakao.com/link/search/%EC%84%9D%EB%AA%A8%EB%8F%84%20%EB%A7%8C%EB%82%A8%EC%9D%98%EA%B4%91%EC%9E%A5", "desc": "석모대교 뷰 공영주차장. 한적한 스텔스 차박 명소.", "toilet": "있음(동절기 확인 필요)", "cooking": "취사 자제", "note": "주차요금 2,000원. 조용한 스텔스 차박 권장."}, {"name": "속초해수욕장", "region": "동해안", "type": "바다", "lat": 38.1881, "lng": 128.6057, "ox": 0, "oy": 0, "addr": "강원특별자치도 속초시", "navi": "https://map.kakao.com/link/search/%EC%86%8D%EC%B4%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "동해 대표 해변. 속초 시내·중앙시장 접근성 최고.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "하조대해변", "region": "동해안", "type": "바다", "lat": 38.0201, "lng": 128.7235, "ox": 0, "oy": 0, "addr": "강원특별자치도 양양군 현북면 하광정리", "navi": "https://map.kakao.com/link/search/%ED%95%98%EC%A1%B0%EB%8C%80%ED%95%B4%EB%B3%80", "desc": "하조대 등대와 기암괴석. 서퍼들의 한적한 해변.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "화진포해수욕장", "region": "동해안", "type": "바다", "lat": 38.4783, "lng": 128.4386, "ox": 0, "oy": 0, "addr": "강원특별자치도 고성군 거진읍 화포리", "navi": "https://map.kakao.com/link/search/%ED%99%94%EC%A7%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "화진포 호수와 해변. 역사 유적과 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "대천해수욕장", "region": "서해안", "type": "바다", "lat": 36.3113, "lng": 126.5127, "ox": -1.5, "oy": -4.2, "addr": "충청남도 보령시", "navi": "https://map.kakao.com/link/search/%EB%8C%80%EC%B2%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "서해안 최대 해변. 머드축제의 고장.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "의림지", "region": "내륙·산", "type": "강·호수", "lat": 37.1732, "lng": 128.2106, "ox": 0, "oy": 0, "addr": "충청북도 제천시", "navi": "https://map.kakao.com/link/search/%EC%9D%98%EB%A6%BC%EC%A7%80", "desc": "삼한시대 저수지. 제림 솔숲 산책로.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "선유도해수욕장", "region": "서해안", "type": "바다", "lat": 35.8181, "lng": 126.412, "ox": 0, "oy": 0, "addr": "전북특별자치도 군산시 옥도면", "navi": "https://map.kakao.com/link/search/%EC%84%A0%EC%9C%A0%EB%8F%84%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "고군산군도. 선유8경의 섬 바다.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "땅끝마을", "region": "남해안", "type": "바다", "lat": 34.2984, "lng": 126.5294, "ox": 0, "oy": 0, "addr": "전라남도 해남군 송호리", "navi": "https://map.kakao.com/link/search/%EB%95%85%EB%81%9D%EB%A7%88%EC%9D%84", "desc": "한반도 최남단. 땅끝탑 일출·일몰.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "순천만습지", "region": "남해안", "type": "바다", "lat": 34.8852, "lng": 127.5103, "ox": 0, "oy": 0, "addr": "전라남도 순천시 선학리", "navi": "https://map.kakao.com/link/search/%EC%88%9C%EC%B2%9C%EB%A7%8C%EC%8A%B5%EC%A7%80", "desc": "갈대밭과 흑두루미. 와온해변 낙조와 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "영일대해수욕장", "region": "동해안", "type": "바다", "lat": 36.056, "lng": 129.3778, "ox": 0, "oy": 0, "addr": "경상북도 포항시 북구 두호동", "navi": "https://map.kakao.com/link/search/%EC%98%81%EC%9D%BC%EB%8C%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "포항 대표 해변. 영일대 누각 야경.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "다대포해수욕장", "region": "남해안", "type": "바다", "lat": 35.0482, "lng": 128.966, "ox": 0, "oy": 0, "addr": "부산광역시 사하구 다대동", "navi": "https://map.kakao.com/link/search/%EB%8B%A4%EB%8C%80%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "낙조 명소. 꿈의 낙조분수.", "toilet": "있음", "cooking": "취사 제한적", "note": "도심 해변 — 야간 주차 규정 확인."}, {"name": "진하해수욕장", "region": "동해안", "type": "바다", "lat": 35.3833, "lng": 129.3457, "ox": -1.6, "oy": -13.6, "addr": "울산광역시 울주군 서생면", "navi": "https://map.kakao.com/link/search/%EC%A7%84%ED%95%98%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "울산 대표 해변. 서생포왜성과 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "솔개해수욕장", "region": "동해안", "type": "바다", "lat": 35.3744, "lng": 129.3458, "ox": 1.7, "oy": 15.2, "addr": "울산광역시 울주군 서생면", "navi": "https://map.kakao.com/link/search/%EC%86%94%EA%B0%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "진하 옆 한적한 해변. 스노클링 명소.", "toilet": "있음(공중화장실)", "cooking": "주변 확인 필요", "note": ""}, {"name": "정자항", "region": "동해안", "type": "바다", "lat": 35.6166, "lng": 129.4522, "ox": 0, "oy": 0, "addr": "울산광역시 북구", "navi": "https://map.kakao.com/link/search/%EC%A0%95%EC%9E%90%ED%95%AD", "desc": "등대와 방파제. 노지 차박 후기 다수.", "toilet": "있음", "cooking": "취사 제한적", "note": ""}, {"name": "구조라해수욕장", "region": "남해안", "type": "바다", "lat": 34.8081, "lng": 128.6917, "ox": 4.1, "oy": -2.8, "addr": "경상남도 거제시 일운면", "navi": "https://map.kakao.com/link/search/%EA%B5%AC%EC%A1%B0%EB%9D%BC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "거제 대표 해변. 외도 보타니아와 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "함덕해수욕장", "region": "제주", "type": "바다", "lat": 33.5432, "lng": 126.6699, "ox": -3.4, "oy": 0.5, "addr": "제주특별자치도 제주시 조천읍 함덕리", "navi": "https://map.kakao.com/link/search/%ED%95%A8%EB%8D%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "에메랄드빛 바다. 서우봉 둘레길.", "toilet": "있음", "cooking": "취사 제한적", "note": "제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."}, {"name": "협재해수욕장", "region": "제주", "type": "바다", "lat": 33.3933, "lng": 126.2389, "ox": 0, "oy": 0, "addr": "제주특별자치도 제주시 한림읍 협재리", "navi": "https://map.kakao.com/link/search/%ED%98%91%EC%9E%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "비양도 뷰. 제주 서부 대표 해변.", "toilet": "있음", "cooking": "취사 제한적", "note": "제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."}, {"name": "안동호", "region": "내륙·산", "type": "강·호수", "lat": 36.6358, "lng": 128.8479, "ox": 0, "oy": 0, "addr": "경상북도 안동시", "navi": "https://map.kakao.com/link/search/%EC%95%88%EB%8F%99%ED%98%B8", "desc": "안동댐 호반. 월영교 야경 드라이브.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "대청호", "region": "내륙·산", "type": "강·호수", "lat": 36.4186, "lng": 127.4971, "ox": 0, "oy": 0, "addr": "충청북도 보은군", "navi": "https://map.kakao.com/link/search/%EB%8C%80%EC%B2%AD%ED%98%B8", "desc": "대청댐 호반 드라이브. 벚꽃 시즌 명소.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "소양호", "region": "내륙·산", "type": "강·호수", "lat": 37.9927, "lng": 128.0533, "ox": 0, "oy": 0, "addr": "강원특별자치도 인제군 남면", "navi": "https://map.kakao.com/link/search/%EC%86%8C%EC%96%91%ED%98%B8", "desc": "소양강댐 호반. 처녀뱃사공 노래비.", "toilet": "확인 필요", "cooking": "확인 필요", "note": ""}, {"name": "구룡포해수욕장", "region": "동해안", "type": "바다", "lat": 35.9725, "lng": 129.548, "ox": 0, "oy": 0, "addr": "경상북도 포항시 남구 구룡포읍", "navi": "https://map.kakao.com/link/search/%EA%B5%AC%EB%A3%A1%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "일본인 가옥거리와 과메기의 고장.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "감포항", "region": "동해안", "type": "바다", "lat": 35.8042, "lng": 129.5026, "ox": 0, "oy": 0, "addr": "경상북도 경주시 감포읍", "navi": "https://map.kakao.com/link/search/%EA%B0%90%ED%8F%AC%ED%95%AD", "desc": "경주 동해안 항구. 문무대왕릉 인근.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "송정해수욕장", "region": "남해안", "type": "바다", "lat": 35.1777, "lng": 129.1986, "ox": -0.8, "oy": 4, "addr": "부산광역시 해운대구 송정동", "navi": "https://map.kakao.com/link/search/%EC%86%A1%EC%A0%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "서핑 명소. 해운대 옆 한적함.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "고래불해수욕장", "region": "동해안", "type": "바다", "lat": 36.5972, "lng": 129.4105, "ox": -1.5, "oy": 3.4, "addr": "경상북도 영덕군 병곡면", "navi": "https://map.kakao.com/link/search/%EA%B3%A0%EB%9E%98%EB%B6%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "영덕 대표 해변. 국민야영장 인근.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "일광해수욕장", "region": "남해안", "type": "바다", "lat": 35.2611, "lng": 129.2337, "ox": -1.1, "oy": -3.3, "addr": "부산광역시 기장군 일광읍", "navi": "https://map.kakao.com/link/search/%EC%9D%BC%EA%B4%91%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", "desc": "기장 대표 해변. 일광산과 함께.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}, {"name": "황매산", "region": "내륙·산", "type": "산·고원", "lat": 35.4942, "lng": 127.9746, "ox": 0, "oy": 0, "addr": "경상남도 합천군 대병면", "navi": "https://map.kakao.com/link/search/%ED%99%A9%EB%A7%A4%EC%82%B0", "desc": "오토캠핑 구역이 갖춰진 고원. 봄 철쭉, 가을 억새 군락이 장관.", "toilet": "있음", "cooking": "가능 (지정 구역)", "note": ""}, {"name": "동막해변", "region": "서해안", "type": "바다", "lat": 37.5921, "lng": 126.459, "ox": 0, "oy": 0, "addr": "인천광역시 강화군 화도면", "navi": "https://map.kakao.com/link/search/%EB%8F%99%EB%A7%89%ED%95%B4%EB%B3%80", "desc": "소나무숲 야영구역과 광활한 갯벌. 강화 대표 낙조 명소.", "toilet": "있음", "cooking": "유료 야영구역 이용", "note": "소나무밭 야영구역은 유료 운영(7~10월). 규정 확인."}, {"name": "곰소항", "region": "서해안", "type": "바다", "lat": 35.5861, "lng": 126.6096, "ox": 1.2, "oy": 1.4, "addr": "전북특별자치도 부안군 곰소리", "navi": "https://map.kakao.com/link/search/%EA%B3%B0%EC%86%8C%ED%95%AD", "desc": "젓갈로 유명한 항구. 곰소염전과 함께 둘러보기.", "toilet": "있음", "cooking": "가능", "note": ""}, {"name": "간절곶", "region": "동해안", "type": "바다", "lat": 35.3592, "lng": 129.3618, "ox": 1.8, "oy": -2.2, "addr": "울산광역시 울주군 서생면", "navi": "https://map.kakao.com/link/search/%EA%B0%84%EC%A0%88%EA%B3%B6", "desc": "한반도에서 해가 가장 먼저 뜨는 곳. 간절곶 등대와 소망우체통.", "toilet": "있음", "cooking": "주변 확인 필요", "note": ""}];
+
+const QUOTES = {
+  "동해안": ["눈뜨면 은하수 직관! 트렁크 열자마자 인생샷 완성 📸","파도 소리 자장가에 별빛 이불 덮고 꿀잠 🌊","동해 일출과 은하수, 하루에 두 번의 우주쇼 ✨"],
+  "서해안": ["서해 낙조가 지면 별이 뜨는 매직아워 🌅","갯벌 위에 별이 내려앉는 밤 🌌","노을 맛집에서 별 맛집으로 변신 ✨"],
+  "남해안": ["남해 밤바다는 별이 두 배! 하늘에도 바다에도 ✨","몽돌 파도 소리와 은하수의 콜라보 🎶","따뜻한 남쪽 밤하늘 아래 힐링 차박 🌙"],
+  "내륙·산": ["고지대 청정 밤하늘, 은하수가 손에 잡힐 듯 🏔️","도시 불빛 없는 곳에서 만나는 진짜 밤 🌌","산속 고요함과 별빛의 완벽한 조화 ✨"],
+  "제주": ["감귤빛 노을 지나 별빛 샤워 시간 🍊","섬의 밤하늘은 유난히 가깝다 🌠","바람과 별과 파도의 제주 밤 🌊"]
+};
+const FILTERS = [
+  {k:"all", e:"", t:"전체"},
+  {k:"동해안", e:"🌊", t:"동해안", d:"별빛 쨍쨍"},
+  {k:"서해안", e:"🌅", t:"서해안", d:"노을+별빛"},
+  {k:"남해안", e:"🏝️", t:"남해안", d:"낭만 밤바다"},
+  {k:"내륙·산", e:"⛰️", t:"내륙·산", d:"도시 탈출 별밤"},
+  {k:"제주", e:"🍊", t:"제주", d:"감귤빛 은하수"}
+];
+const REGION_LABELS = [
+  {t:"강원 동해", lat:37.55, lng:129.1},
+  {t:"수도권·경기", lat:37.35, lng:126.7},
+  {t:"충청 내륙", lat:36.45, lng:127.3},
+  {t:"경북 소백", lat:36.25, lng:128.8},
+  {t:"전남 내륙", lat:35.25, lng:126.9},
+  {t:"남해안", lat:34.7, lng:127.9}
 ];
 
 const WMO = {0:"맑음",1:"대체로 맑음",2:"부분적 흐림",3:"흐림",45:"안개",48:"서리안개",
@@ -228,17 +352,16 @@ function moonInfo(date){
   const age = (((date.getTime()-known)/86400000) % synodic + synodic) % synodic;
   const illum = (1 - Math.cos(2*Math.PI*age/synodic)) / 2;
   let name, emoji;
-  if(age < 1.5 || age > 28){ name="삭 (신월)"; emoji="🌑"; }
+  if(age < 1.5 || age > 28){ name="그믐달"; emoji="🌑"; }
   else if(age < 7.4){ name="초승달"; emoji="🌒"; }
   else if(age < 8.9){ name="상현달"; emoji="🌓"; }
   else if(age < 13.8){ name="보름에 가까움"; emoji="🌔"; }
-  else if(age < 16.2){ name="보름 (망)"; emoji="🌕"; }
+  else if(age < 16.2){ name="보름달"; emoji="🌕"; }
   else if(age < 21.1){ name="보름 지남"; emoji="🌖"; }
   else if(age < 22.6){ name="하현달"; emoji="🌗"; }
   else { name="그믐달"; emoji="🌘"; }
   return {age, illum, name, emoji};
 }
-
 function tonightHours(){
   const now = new Date();
   const fmt = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
@@ -248,25 +371,44 @@ function tonightHours(){
   for(let h=0; h<=5; h++) hs.push(t1+"T"+String(h).padStart(2,"0")+":00");
   return hs;
 }
-
 function starScore(cloudAvg, moonIllum){
   return Math.max(0, Math.round((100 - cloudAvg*1.15) - moonIllum*35));
 }
 function grade(s){
-  if(s>=80) return ["환상적 🌟","#4ade80"];
-  if(s>=60) return ["좋음 ✨","#4ade80"];
-  if(s>=40) return ["보통","#facc15"];
+  if(s>=80) return ["환상적 🌟","#34d399"];
+  if(s>=60) return ["좋음 ✨","#34d399"];
+  if(s>=40) return ["보통","#fbbf24"];
   if(s>=20) return ["아쉬움","#f87171"];
   return ["별 보기 어려움","#f87171"];
 }
 function scoreColor(s){
   if(s==null) return "#9ca3af";
-  if(s>=70) return "#4ade80";
-  if(s>=40) return "#facc15";
+  if(s>=70) return "#34d399";
+  if(s>=40) return "#fbbf24";
   return "#f87171";
 }
+function quoteFor(s, i){
+  const q = QUOTES[s.region] || QUOTES["내륙·산"];
+  return q[i % q.length];
+}
+function windDesc(v){
+  if(v < 2) return "잔잔함";
+  if(v < 5) return "산들바람";
+  if(v < 9) return "강풍 주의";
+  return "매우 강함";
+}
+function cloudDesc(v){
+  if(v < 10) return "청명";
+  if(v < 30) return "대체로 맑음";
+  if(v < 60) return "부분적 흐림";
+  return "흐림";
+}
+function regionShort(s){
+  const p = s.addr.split(" ");
+  return s.region + (p[1] ? " · " + p[1].replace("특별시","").replace("광역시","") : "");
+}
 
-/* ============ 자립형 SVG 지도 (외부 타일·라이브러리 없음) ============ */
+/* ============ 지도 ============ */
 const SVGNS = "http://www.w3.org/2000/svg";
 const LNG0=124, LNG1=131, LAT0=33, LAT1=39, VW=700, VH=600;
 function project(lng, lat){
@@ -276,6 +418,11 @@ let activeFilter = "all";
 let wxData = {};
 let selectedIdx = -1;
 const spotEls = [];
+const kmap = document.getElementById("kmap");
+let view = {cx:350, cy:300, w:700, h:600};
+function applyView(){
+  kmap.setAttribute("viewBox", (view.cx-view.w/2)+" "+(view.cy-view.h/2)+" "+view.w+" "+view.h);
+}
 
 (function buildMap(){
   try{
@@ -311,11 +458,20 @@ const spotEls = [];
       path.setAttribute("class","land");
       land.appendChild(path);
     });
+    const rl = document.getElementById("rlabels");
+    REGION_LABELS.forEach(L=>{
+      const q = project(L.lng, L.lat);
+      const tx = document.createElementNS(SVGNS,"text");
+      tx.setAttribute("x", q[0].toFixed(1)); tx.setAttribute("y", q[1].toFixed(1));
+      tx.setAttribute("class","rlabel"); tx.textContent = L.t;
+      rl.appendChild(tx);
+    });
     const layer = document.getElementById("spotLayer");
     SPOTS.forEach((s,i)=>{
       const q = project(s.lng, s.lat);
       const c = document.createElementNS(SVGNS,"circle");
-      c.setAttribute("cx", (q[0]+(s.ox||0)).toFixed(1)); c.setAttribute("cy", (q[1]+(s.oy||0)).toFixed(1));
+      c.setAttribute("cx", (q[0]+(s.ox||0)).toFixed(1));
+      c.setAttribute("cy", (q[1]+(s.oy||0)).toFixed(1));
       c.setAttribute("r", spotR()); c.setAttribute("class","spot");
       c.setAttribute("fill", "#9ca3af");
       const t = document.createElementNS(SVGNS,"title");
@@ -331,17 +487,29 @@ const spotEls = [];
   }
 })();
 
+document.getElementById("zin").addEventListener("click", ()=>{
+  if(view.w > 160){ view.w *= 0.65; view.h *= 0.65; applyView(); }
+});
+document.getElementById("zout").addEventListener("click", ()=>{
+  view.w = Math.min(700, view.w*1.5); view.h = Math.min(600, view.h*1.5);
+  if(view.w >= 700){ view.cx = 350; view.cy = 300; }
+  applyView();
+});
+document.getElementById("resetView").addEventListener("click", ()=>{
+  view = {cx:350, cy:300, w:700, h:600}; applyView();
+});
+
 function spotR(){ return window.matchMedia("(max-width: 768px)").matches ? 11 : 8; }
 function applySpotSize(){
   const r = spotR();
   spotEls.forEach((c,k)=>c.setAttribute("r", k===selectedIdx ? r+3 : r));
 }
-function selectSpot(i){
+function selectSpot(i, silent){
   selectedIdx = i;
   spotEls.forEach((c,k)=>c.classList.toggle("sel", k===i));
   applySpotSize();
   showPanel(i);
-  if(window.matchMedia("(max-width: 768px)").matches){
+  if(!silent && window.matchMedia("(max-width: 768px)").matches){
     const p = document.getElementById("panel");
     if(p && p.scrollIntoView) p.scrollIntoView({behavior:"smooth", block:"nearest"});
   }
@@ -358,14 +526,21 @@ function applyFilter(){
     if(spotEls[i]) spotEls[i].style.display = show ? "" : "none";
   });
 }
-document.querySelectorAll("#filters button").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.querySelectorAll("#filters button").forEach(b=>b.classList.remove("on"));
-    btn.classList.add("on");
-    activeFilter = btn.dataset.f;
-    applyFilter();
+(function buildFilters(){
+  const box = document.getElementById("filters");
+  box.innerHTML = FILTERS.map(f=>{
+    const n = f.k==="all" ? SPOTS.length : SPOTS.filter(s=>s.region===f.k).length;
+    return `<button class="fbtn${f.k==="all"?" on":""}" data-f="${f.k}">${f.e?f.e+" ":""}${f.t}${f.d?` <small>${f.d}</small>`:""} <span class="cnt">${n}</span></button>`;
+  }).join("");
+  box.querySelectorAll(".fbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      box.querySelectorAll(".fbtn").forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");
+      activeFilter = btn.dataset.f;
+      applyFilter();
+    });
   });
-});
+})();
 
 /* ============ 날씨 ============ */
 async function fetchWeather(s){
@@ -374,7 +549,7 @@ async function fetchWeather(s){
   try{
     const url = "https://api.open-meteo.com/v1/forecast?latitude="+s.lat+"&longitude="+s.lng
       + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,wind_speed_10m"
-      + "&hourly=cloud_cover&wind_speed_unit=ms&timezone=Asia%2FSeoul&forecast_days=2";
+      + "&hourly=cloud_cover&daily=temperature_2m_min&wind_speed_unit=ms&timezone=Asia%2FSeoul&forecast_days=2";
     const r = await fetch(url, {signal: ctrl.signal});
     if(!r.ok) throw new Error("wx "+r.status);
     return await r.json();
@@ -382,7 +557,6 @@ async function fetchWeather(s){
     clearTimeout(timer);
   }
 }
-
 function analyze(d){
   const th = tonightHours();
   const idx = th.map(t=>d.hourly.time.indexOf(t)).filter(x=>x>=0);
@@ -390,78 +564,121 @@ function analyze(d){
   const avg = clouds.length ? clouds.reduce((a,b)=>a+b,0)/clouds.length : d.current.cloud_cover;
   return {avg};
 }
-
+function milkyBox(score, moon, cloud){
+  let h, sub;
+  if(score>=70){
+    h = "은하수 배달 완료! 돗자리만 펼면 인생샷";
+    sub = "오늘 밤 "+moon.name+" 하늘에 별이 쏟아져요. 카메라 삼각대 필수!";
+  }else if(score>=40){
+    h = "은하수 간헐적 출현! 구름 사이를 노려보세요";
+    sub = "구름 "+Math.round(cloud)+"% — 잠깐씩 열리는 하늘에 별이 반짝여요.";
+  }else{
+    h = "오늘은 구름 이불! 별은 내일 만나요";
+    sub = "구름 "+Math.round(cloud)+"% — 차박은 즐겁게, 별은 다음 기회에.";
+  }
+  return `<div class="milky"><span class="mi">🔭</span><div><b>${h}</b><p>${sub}</p></div></div>`;
+}
+function facRow(icon, label, val){
+  const unknown = !val || val.indexOf("확인 필요") >= 0;
+  return `<div><span class="fi">${icon}</span><div><span>${label}</span><b class="${unknown?"muted":""}">${val||"확인 필요"}</b></div></div>`;
+}
 function showPanel(i){
   const s = SPOTS[i], panel = document.getElementById("panel");
   const w = wxData[i];
   const moon = moonInfo(new Date());
-  let html = "<h2>"+s.name+"</h2>"
-    + '<div class="badges"><span class="badge">'+s.region+'</span><span class="badge">'+s.type+"</span></div>"
-    + '<div class="addr-line">📍 '+s.addr+'</div>'
-    + '<a class="navi-btn" href="'+s.navi+'" target="_blank" rel="noopener">🧭 카카오맵에서 길찾기</a>'
-    + '<p class="desc">'+s.desc+"</p>"
-    + '<div class="fac"><div><span>화장실</span>'+s.toilet+"</div>"
-    + "<div><span>취사</span>"+s.cooking+"</div></div>";
+  let html = `<div class="p-top"><div><span class="p-region">${s.region}</span><div class="p-addr">📍 ${s.addr}</div></div>`
+    + `<div class="p-score"><span>STAR SCORE</span><b>${w&&w.ok?w.score:"--"}<i>점</i></b></div></div>`
+    + `<h2>${s.name}</h2>`;
   if(w && w.ok){
     const c = w.data.current, a = w.analyzed;
-    const score = starScore(a.avg, moon.illum);
-    const g = grade(score);
-    html += '<div class="wx-now"><div class="t">'+Math.round(c.temperature_2m)+'°</div>'
-      + '<div class="c">'+(WMO[c.weather_code]||"알 수 없음")+"<br>업데이트: "+c.time.slice(11,16)+"</div></div>"
-      + '<div class="wx-grid">'
-      + "<div><span>체감</span>"+Math.round(c.apparent_temperature)+"°</div>"
-      + "<div><span>구름</span>"+c.cloud_cover+"%</div>"
-      + "<div><span>바람</span>"+c.wind_speed_10m.toFixed(1)+"m/s</div>"
-      + "<div><span>습도</span>"+c.relative_humidity_2m+"%</div></div>"
-      + '<div class="star-box"><div class="score">'+score+'<span style="font-size:16px">/100</span></div>'
-      + '<div class="grade" style="color:'+g[1]+'">'+g[0]+"</div>"
-      + '<div class="moon">'+moon.emoji+" "+moon.name+" · 달 밝기 "+Math.round(moon.illum*100)
-      + "% · 오늘 밤 평균 구름 "+Math.round(a.avg)+"%</div></div>";
+    const score = w.score;
+    const tmin = Math.round(w.data.daily.temperature_2m_min[0]);
+    html += milkyBox(score, moon, a.avg)
+      + `<div class="hero"><img src="hero.jpg" alt="차박지 밤하늘" onerror="this.remove()">`
+      + `<span class="hero-tag">📸 실시간 차박러 인증 뷰</span><span class="hero-score">인생샷 지수 99%</span></div>`
+      + `<div class="wx4">`
+      + `<div><span class="wi">☁️</span><div><span>구름량 (하늘 덮임)</span><b>${Math.round(a.avg)}% <small>(${cloudDesc(a.avg)})</small></b></div></div>`
+      + `<div><span class="wi">🌡️</span><div><span>현재 / 최저 기온</span><b>${Math.round(c.temperature_2m)}°C / ${tmin}°C</b></div></div>`
+      + `<div><span class="wi">💨</span><div><span>바람 세기</span><b>${c.wind_speed_10m.toFixed(1)}m/s <small>(${windDesc(c.wind_speed_10m)})</small></b></div></div>`
+      + `<div><span class="wi">🌙</span><div><span>달 밝기</span><b>${Math.round(moon.illum*100)}% <small>(${moon.name})</small></b></div></div>`
+      + `</div>`
+      + `<div class="fac-title">차박 편의 시설 현황</div><div class="fac4">`
+      + facRow("🚻","공용 화장실", s.toilet)
+      + facRow("🏪","편의점", "인근 확인 필요")
+      + facRow("🔥","취사", s.cooking)
+      + facRow("🅿️","주차", "현장 확인 필요")
+      + `</div>`;
   }else{
-    html += '<div class="loading">날씨 정보를 불러오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요.</div>'
-      + '<div style="text-align:center"><button class="retry" onclick="init()">다시 시도</button></div>';
+    html += `<p class="desc">${s.desc}</p>`
+      + `<div class="loading">날씨 정보를 불러오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요.</div>`
+      + `<div style="text-align:center"><button class="retry" onclick="init()">다시 시도</button></div>`;
   }
-  if(s.warn) html += '<div class="note warn" style="margin-top:10px">⚠️ '+s.warn+"</div>";
+  html += `<div class="p-actions"><a class="navi-btn" href="${s.navi}" target="_blank" rel="noopener">🧭 차박 내비 찍기 (티맵/카카오)</a>`
+    + `<button class="share-btn" onclick="shareSpot()" aria-label="공유">↗</button></div>`;
+  if(s.warn) html += `<div class="note warn">⚠️ ${s.warn}</div>`;
+  html += `<div class="note" style="margin-top:10px;">⚙️ 출발 전 지자체 현장 플래카드를 꼭 확인하세요! 매너타임 22:00 준수</div>`;
   panel.innerHTML = html;
 }
+function shareSpot(){
+  if(selectedIdx < 0) return;
+  const s = SPOTS[selectedIdx];
+  const sc = wxData[selectedIdx] && wxData[selectedIdx].ok ? wxData[selectedIdx].score+"점" : "측정중";
+  const text = "차박 지도 — "+s.name+" (별보기 "+sc+") "+s.navi;
+  if(navigator.share){ navigator.share({title:"차박 지도", text:text, url:location.href}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>alert("스팟 정보를 복사했어요")); }
+}
 
+/* ============ 초기화 ============ */
 async function init(){
-  document.getElementById("top3").innerHTML = '<div class="loading">50곳의 오늘 밤 하늘을 읽는 중…</div>';
+  const top3el = document.getElementById("top3");
+  top3el.innerHTML = '<div class="loading">50곳의 오늘 밤 하늘을 읽는 중…</div>';
   const moon = moonInfo(new Date());
+  document.getElementById("alertMoon").innerHTML =
+    `달 밝기: <b>${Math.round(moon.illum*100)}%</b> (${moon.name} ${moon.emoji}) ${moon.illum<0.4?"별 관측 최적기":""}`;
   let results = [];
   try{
     results = await Promise.allSettled(SPOTS.map(s=>fetchWeather(s)));
   }catch(e){ results = []; }
-  let okCount = 0;
   results.forEach((r,i)=>{
     if(r.status==="fulfilled"){
       const analyzed = analyze(r.value);
       const score = starScore(analyzed.avg, moon.illum);
       wxData[i] = {ok:true, data:r.value, analyzed, score};
       if(spotEls[i]) spotEls[i].setAttribute("fill", scoreColor(score));
-      okCount++;
     }else{
       wxData[i] = {ok:false};
     }
   });
 
-  const ranked = SPOTS.map((s,i)=>({i, score: wxData[i] && wxData[i].ok ? wxData[i].score : -1}))
+  const ranked = SPOTS.map((s,i)=>({i, s, score: wxData[i] && wxData[i].ok ? wxData[i].score : -1}))
     .filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).slice(0,3);
   const medals = ["🥇","🥈","🥉"];
   if(ranked.length){
-    document.getElementById("top3").innerHTML =
-      '<div style="width:100%;font-size:13px;color:var(--muted);margin-bottom:2px">오늘 밤 별보기 TOP 3</div>' + ranked.map((r,k)=>{
-        const s = SPOTS[r.i];
-        return '<div class="top-card" onclick="selectSpot('+r.i+')">'
-          + '<div class="rank">'+medals[k]+' 오늘 밤</div>'
-          + '<div class="nm">'+s.name+"</div>"
-          + '<div class="sc"><b style="color:'+scoreColor(r.score)+'">'+r.score+"</b>점 · "+s.region
-          + " · 구름 "+Math.round(wxData[r.i].analyzed.avg)+"%</div></div>";
-      }).join("");
+    top3el.innerHTML = ranked.map((r,k)=>{
+      const c = wxData[r.i].data.current;
+      return `<div class="top-card${k===0?" first":""}" onclick="selectSpot(${r.i})">`
+        + `<div class="rank">${medals[k]} 오늘 밤 ${k+1}등 <span>${regionShort(r.s)}</span></div>`
+        + `<div class="trow"><div class="nm">${r.s.name}</div><div class="sc"><b>${r.score}</b>점</div></div>`
+        + `<div class="wxline">구름 ${Math.round(wxData[r.i].analyzed.avg)}% · 바람 ${c.wind_speed_10m.toFixed(1)}m/s</div>`
+        + `<div class="quote">"${quoteFor(r.s, r.i)}"</div></div>`;
+    }).join("");
+    const c0 = wxData[ranked[0].i].analyzed.avg;
+    document.getElementById("top3note").textContent =
+      c0 <= 5 ? "실시간 구름 "+Math.round(c0)+"% 달콤 구역" : "지금 가장 맑은 TOP 3";
+    const fit = {};
+    SPOTS.forEach((s,i)=>{ if(wxData[i] && wxData[i].ok){ (fit[s.region] = fit[s.region]||[]).push(wxData[i].score); } });
+    const avg = Object.keys(fit).map(k=>({k, v: Math.round(fit[k].reduce((a,b)=>a+b,0)/fit[k].length)})).sort((a,b)=>b.v-a.v);
+    if(avg.length){
+      document.getElementById("regionFit").innerHTML =
+        "🔥 실시간 관측 적합도: " + avg.slice(0,3).map(a=>`<b>${a.k}</b> ${a.v}%`).join(" · ");
+      document.getElementById("romanceAlert").innerHTML =
+        `⚠️ 별보기 낭만 경보: 오늘 밤 <b>${avg[0].k}</b> 낭만이 너무 과해 잠들지 못할 수 있습니다! ✨`;
+    }
+    selectSpot(ranked[0].i, true);
   }else{
-    document.getElementById("top3").innerHTML =
-      '<div class="loading">날씨 정보를 가져오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요. '
+    top3el.innerHTML = '<div class="loading">날씨 정보를 가져오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요. '
       + '파일을 크롬에서 직접 열면 실시간 날씨가 표시됩니다. <button class="retry" onclick="init()">다시 시도</button></div>';
+    document.getElementById("romanceAlert").textContent = "날씨 정보를 불러오지 못했어요. 네트워크 연결을 확인해주세요.";
   }
 }
 init();
