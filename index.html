@@ -4,15 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>차박 지도 — 오늘 밤 별 보기 좋은 곳</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
   :root{
     --bg:#0b1020; --panel:#141b33; --panel2:#1a2340; --line:#263156;
     --txt:#eef1ff; --muted:#9aa3c7; --accent:#ffd166; --good:#4ade80; --mid:#facc15; --bad:#f87171;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{background:var(--bg); color:var(--txt); font-family:'Pretendard Variable',Pretendard,system-ui,sans-serif; min-height:100vh; display:flex; flex-direction:column;}
+  body{background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif; min-height:100vh; display:flex; flex-direction:column;}
   #errbar{display:none; background:#3a1420; color:#ffc9c9; border-bottom:1px solid #7a2b3a; padding:10px 22px; font-size:13px;}
   header{padding:18px 22px 12px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
   header h1{font-size:22px; font-weight:800; letter-spacing:-.5px;}
@@ -31,7 +29,14 @@
   #filters button{background:var(--panel); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:7px 14px; font-size:13px; cursor:pointer; font-family:inherit;}
   #filters button.on{background:var(--accent); color:#1a1a1a; border-color:var(--accent); font-weight:700;}
   main{flex:1; display:flex; gap:0; min-height:0; padding:0 22px;}
-  #map{flex:1.6; min-height:520px; border-radius:14px; border:1px solid var(--line); z-index:1; background:#0e1430;}
+  #mapWrap{flex:1.6; min-height:520px; border-radius:14px; border:1px solid var(--line); background:#0d1330; overflow:hidden; position:relative;}
+  #kmap{width:100%; height:100%; display:block;}
+  .land{fill:#1d2650; stroke:#3a4c86; stroke-width:1.4;}
+  .grat{stroke:#141c42; stroke-width:1;}
+  .grat-t{fill:#3d4a7d; font-size:11px;}
+  .spot{stroke:#fff; stroke-width:2.5; cursor:pointer;}
+  .spot:hover{stroke:var(--accent);}
+  .spot.sel{stroke:var(--accent); stroke-width:4;}
   aside{flex:1; max-width:380px; margin-left:14px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; overflow-y:auto; max-height:70vh;}
   aside h2{font-size:18px; margin-bottom:2px;}
   .badges{display:flex; gap:6px; margin:8px 0 10px; flex-wrap:wrap;}
@@ -52,23 +57,16 @@
   .star-box .moon{font-size:13px; color:var(--muted);}
   .note{font-size:12.5px; line-height:1.6; color:var(--muted); background:var(--panel2); border:1px dashed var(--line); border-radius:10px; padding:10px 12px;}
   .note.warn{color:#ffd9a8; border-color:#6b4a2f; background:#2a1f14;}
+  .retry{margin-top:10px; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:999px; padding:8px 18px; font-size:13px; cursor:pointer; font-family:inherit;}
+  .retry:hover{border-color:var(--accent);}
   .legend{display:flex; gap:14px; padding:10px 22px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
   .dot{width:11px; height:11px; border-radius:50%; display:inline-block; margin-right:5px; vertical-align:middle;}
   footer{padding:8px 22px 18px; font-size:12px; color:var(--muted); line-height:1.7;}
-  .mk{width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 1px 6px rgba(0,0,0,.5);}
   .empty{color:var(--muted); font-size:14px; line-height:1.8; text-align:center; padding:40px 10px;}
   .loading{color:var(--muted); font-size:13px; padding:20px; text-align:center;}
-  .fallback{height:100%; overflow-y:auto; padding:16px;}
-  .fb-notice{font-size:13.5px; line-height:1.7; color:var(--muted); background:var(--panel2); border:1px dashed var(--line); border-radius:12px; padding:14px; margin-bottom:14px;}
-  #spotCards{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px;}
-  .spot-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; cursor:pointer; transition:.15s;}
-  .spot-card:hover{border-color:var(--accent); transform:translateY(-2px);}
-  .spot-card .nm{font-weight:700; font-size:15px;}
-  .spot-card .rg{font-size:12px; color:var(--muted); margin:3px 0 6px;}
-  .spot-card .sc{font-size:13px; color:var(--muted);}
   @media (max-width:900px){
     main{flex-direction:column;}
-    #map{min-height:380px;}
+    #mapWrap{min-height:380px;}
     aside{max-width:none; margin:14px 0 0; max-height:none;}
   }
 </style>
@@ -76,21 +74,19 @@
 <body>
 <div id="errbar"></div>
 <script>
-/* 부팅 에러 감지: CDN 로드 실패 등을 상단에 바로 표시 */
+/* 부팅 에러 감지 */
 window.addEventListener("error", function(e){
   var bar = document.getElementById("errbar");
-  if(!bar) return;
-  var isRes = e.target && (e.target.tagName === "SCRIPT" || e.target.tagName === "LINK");
+  if(!bar || bar.dataset.shown) return;
+  bar.dataset.shown = "1";
   bar.style.display = "block";
-  bar.textContent = isRes
-    ? "⚠️ 외부 라이브러리를 불러오지 못했어요. 네트워크 연결을 확인하거나, 파일을 크롬/사파리에서 직접 열어보세요."
-    : "⚠️ 화면을 불러오는 중 문제가 생겼어요: " + (e.message || "알 수 없는 오류");
+  bar.textContent = "⚠️ 화면을 불러오는 중 문제가 생겼어요: " + (e.message || "알 수 없는 오류");
 }, true);
 </script>
 <header>
   <h1><span class="star">★</span> 차박 지도</h1>
   <div class="moon-chip" id="moonChip">달 정보 불러오는 중…</div>
-  <p>전국 차박 스팟 20곳 · 실시간 날씨(Open-Meteo) · 오늘 밤 별보기 지수 — 마커를 눌러보세요</p>
+  <p>전국 차박 스팟 20곳 · 실시간 날씨(Open-Meteo) · 오늘 밤 별보기 지수 — 지도의 점을 눌러보세요</p>
 </header>
 
 <div id="top3"></div>
@@ -105,8 +101,15 @@ window.addEventListener("error", function(e){
 </div>
 
 <main>
-  <div id="map"></div>
-  <aside id="panel"><div class="empty">🗺️<br>지도의 마커를 누르면<br>실시간 날씨와 별보기 지수를 보여드려요</div></aside>
+  <div id="mapWrap">
+    <svg id="kmap" viewBox="0 0 700 600" role="img" aria-label="대한민국 차박 스팟 지도">
+      <rect x="0" y="0" width="700" height="600" fill="#0d1330"/>
+      <g id="grat"></g>
+      <g id="land"></g>
+      <g id="spotLayer"></g>
+    </svg>
+  </div>
+  <aside id="panel"><div class="empty">🗺️<br>지도의 점을 누르면<br>실시간 날씨와 별보기 지수를 보여드려요</div></aside>
 </main>
 
 <div class="legend">
@@ -118,12 +121,14 @@ window.addEventListener("error", function(e){
 
 <footer>
   · 별보기 지수 = 오늘 밤(18시~익일 5시) 평균 구름량 + 달 밝기로 계산한 추정치예요.<br>
-  · 노지 차박 가능 여부·화장실·취사 규정은 지자체와 현장 상황에 따라 달라져요. 출발 전 현장 안내를 꼭 확인하세요. 쓰레기는 되가져가기! 🏕️
+  · 노지 차박 가능 여부·화장실·취사 규정은 지자체와 현장 상황에 따라 달라져요. 출발 전 현장 안내를 꼭 확인하세요. 쓰레기는 되가져가기! 🏕️<br>
+  · 지형: Natural Earth 50m 데이터를 단순화해 내장했어요. 외부 지도 타일을 쓰지 않아 미리보기에서도 표시됩니다.
 </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-/* ============ 0. 달 정보: 지도 로드 여부와 무관하게 가장 먼저 표시 ============ */
+const KOREA_RINGS = [[[126.634, 37.782], [126.665, 37.801], [126.667, 37.917], [126.754, 37.979], [127.01, 38.241], [127.09, 38.284], [127.17, 38.305], [127.294, 38.313], [127.533, 38.305], [127.746, 38.319], [127.905, 38.3], [128.039, 38.309], [128.169, 38.359], [128.223, 38.417], [128.339, 38.608], [128.375, 38.623], [128.619, 38.176], [128.852, 37.887], [129.052, 37.678], [129.335, 37.275], [129.418, 37.059], [129.426, 36.926], [129.473, 36.742], [129.433, 36.637], [129.445, 36.471], [129.427, 36.385], [129.393, 36.323], [129.404, 36.052], [129.426, 36.019], [129.458, 36.006], [129.51, 36.038], [129.573, 36.051], [129.562, 35.948], [129.419, 35.498], [129.329, 35.333], [129.214, 35.182], [129.077, 35.123], [128.98, 35.102], [128.796, 35.094], [128.643, 35.12], [128.511, 35.101], [128.458, 35.069], [128.419, 35.016], [128.448, 34.932], [128.444, 34.87], [128.388, 34.875], [128.276, 34.911], [128.152, 34.916], [128.095, 34.934], [128.036, 35.022], [127.977, 35.019], [127.873, 34.966], [127.715, 34.955], [127.659, 34.926], [127.639, 34.89], [127.662, 34.843], [127.742, 34.783], [127.715, 34.721], [127.632, 34.69], [127.565, 34.766], [127.524, 34.84], [127.477, 34.844], [127.404, 34.823], [127.39, 34.743], [127.479, 34.625], [127.401, 34.553], [127.381, 34.501], [127.325, 34.463], [127.173, 34.546], [127.195, 34.605], [127.261, 34.662], [127.269, 34.72], [127.247, 34.755], [127.031, 34.607], [126.897, 34.439], [126.826, 34.451], [126.796, 34.494], [126.755, 34.512], [126.611, 34.404], [126.584, 34.318], [126.531, 34.314], [126.508, 34.351], [126.506, 34.428], [126.482, 34.494], [126.333, 34.59], [126.264, 34.673], [126.301, 34.72], [126.426, 34.695], [126.525, 34.698], [126.505, 34.738], [126.473, 34.756], [126.539, 34.779], [126.593, 34.824], [126.548, 34.837], [126.479, 34.81], [126.421, 34.823], [126.398, 34.933], [126.327, 35.045], [126.291, 35.154], [126.361, 35.217], [126.46, 35.456], [126.493, 35.501], [126.582, 35.534], [126.614, 35.571], [126.487, 35.606], [126.488, 35.647], [126.717, 35.769], [126.753, 35.872], [126.72, 35.898], [126.647, 35.922], [126.664, 35.975], [126.693, 36.014], [126.682, 36.038], [126.54, 36.166], [126.557, 36.236], [126.544, 36.341], [126.548, 36.478], [126.507, 36.586], [126.488, 36.694], [126.389, 36.651], [126.181, 36.692], [126.161, 36.772], [126.217, 36.871], [126.352, 36.958], [126.429, 36.969], [126.487, 37.007], [126.578, 37.02], [126.687, 36.96], [126.784, 36.948], [126.839, 36.846], [126.872, 36.824], [126.879, 36.862], [126.958, 36.906], [126.977, 36.939], [126.96, 36.958], [126.869, 36.976], [126.787, 37.103], [126.776, 37.158], [126.746, 37.194], [126.791, 37.295], [126.696, 37.411], [126.65, 37.447], [126.657, 37.551], [126.58, 37.654], [126.563, 37.717], [126.578, 37.745], [126.621, 37.755], [126.634, 37.782]], [[128.741, 34.799], [128.647, 34.737], [128.52, 34.82], [128.489, 34.865], [128.586, 34.932], [128.668, 35.009], [128.722, 35.014], [128.741, 34.799]], [[128.066, 34.806], [128.055, 34.708], [127.984, 34.703], [127.942, 34.766], [127.897, 34.735], [127.873, 34.735], [127.838, 34.813], [127.832, 34.875], [127.915, 34.921], [127.966, 34.893], [128.038, 34.879], [128.066, 34.806]], [[126.234, 34.371], [126.17, 34.355], [126.109, 34.399], [126.123, 34.444], [126.247, 34.563], [126.344, 34.545], [126.38, 34.498], [126.335, 34.426], [126.234, 34.371]], [[126.521, 37.737], [126.516, 37.605], [126.461, 37.61], [126.423, 37.624], [126.407, 37.649], [126.369, 37.772], [126.412, 37.823], [126.494, 37.783], [126.521, 37.737]], [[126.753, 34.344], [126.77, 34.296], [126.689, 34.305], [126.646, 34.351], [126.652, 34.39], [126.7, 34.396], [126.753, 34.344]], [[126.418, 36.493], [126.404, 36.428], [126.338, 36.471], [126.319, 36.613], [126.387, 36.571], [126.418, 36.493]], [[126.172, 34.731], [126.159, 34.707], [126.115, 34.714], [126.071, 34.783], [126.052, 34.838], [126.008, 34.867], [126.078, 34.915], [126.169, 34.83], [126.172, 34.731]], [[130.916, 37.478], [130.871, 37.449], [130.817, 37.478], [130.81, 37.51], [130.838, 37.537], [130.904, 37.554], [130.934, 37.53], [130.916, 37.478]], [[126.327, 33.224], [126.282, 33.202], [126.24, 33.215], [126.166, 33.312], [126.199, 33.368], [126.338, 33.46], [126.696, 33.549], [126.76, 33.553], [126.901, 33.515], [126.931, 33.444], [126.873, 33.341], [126.709, 33.272], [126.582, 33.238], [126.327, 33.224]]];
+
+/* ============ 0. 달 정보: 가장 먼저, 네트워크와 무관하게 표시 ============ */
 (function renderMoonFirst(){
   try{
     var m = moonInfo(new Date());
@@ -249,76 +254,106 @@ function scoreColor(s){
   return "#f87171";
 }
 
-/* ============ 지도: CDN 로드 실패 시 목록 폴백 모드 ============ */
-const HAS_MAP = (typeof L !== "undefined");
-let map = null;
-const markers = [];
+/* ============ 자립형 SVG 지도 (외부 타일·라이브러리 없음) ============ */
+const SVGNS = "http://www.w3.org/2000/svg";
+const LNG0=124, LNG1=131, LAT0=33, LAT1=39, VW=700, VH=600;
+function project(lng, lat){
+  return [(lng-LNG0)/(LNG1-LNG0)*VW, (LAT1-lat)/(LAT1-LAT0)*VH];
+}
 let activeFilter = "all";
 let wxData = {};
+let selectedIdx = -1;
+const spotEls = [];
 
-function makeIcon(color){
-  return L.divIcon({className:"", html:'<div class="mk" style="background:'+color+'"></div>', iconSize:[22,22], iconAnchor:[11,11]});
+(function buildMap(){
+  try{
+    const grat = document.getElementById("grat");
+    for(let lng=125; lng<=130; lng++){
+      const x = project(lng, 0)[0];
+      const ln = document.createElementNS(SVGNS,"line");
+      ln.setAttribute("x1",x); ln.setAttribute("y1",0);
+      ln.setAttribute("x2",x); ln.setAttribute("y2",VH);
+      ln.setAttribute("class","grat"); grat.appendChild(ln);
+      const tx = document.createElementNS(SVGNS,"text");
+      tx.setAttribute("x",x+4); tx.setAttribute("y",VH-8);
+      tx.setAttribute("class","grat-t"); tx.textContent = lng+"°E"; grat.appendChild(tx);
+    }
+    for(let lat=34; lat<=38; lat++){
+      const y = project(0, lat)[1];
+      const ln = document.createElementNS(SVGNS,"line");
+      ln.setAttribute("x1",0); ln.setAttribute("y1",y);
+      ln.setAttribute("x2",VW); ln.setAttribute("y2",y);
+      ln.setAttribute("class","grat"); grat.appendChild(ln);
+      const tx = document.createElementNS(SVGNS,"text");
+      tx.setAttribute("x",6); tx.setAttribute("y",y-5);
+      tx.setAttribute("class","grat-t"); tx.textContent = lat+"°N"; grat.appendChild(tx);
+    }
+    const land = document.getElementById("land");
+    KOREA_RINGS.forEach(ring=>{
+      const d = "M"+ring.map(p=>{
+        const q = project(p[0],p[1]);
+        return q[0].toFixed(1)+" "+q[1].toFixed(1);
+      }).join("L")+"Z";
+      const path = document.createElementNS(SVGNS,"path");
+      path.setAttribute("d", d);
+      path.setAttribute("class","land");
+      land.appendChild(path);
+    });
+    const layer = document.getElementById("spotLayer");
+    SPOTS.forEach((s,i)=>{
+      const q = project(s.lng, s.lat);
+      const c = document.createElementNS(SVGNS,"circle");
+      c.setAttribute("cx", q[0].toFixed(1)); c.setAttribute("cy", q[1].toFixed(1));
+      c.setAttribute("r", 8); c.setAttribute("class","spot");
+      c.setAttribute("fill", "#9ca3af");
+      const t = document.createElementNS(SVGNS,"title");
+      t.textContent = s.name+" ("+s.region+")";
+      c.appendChild(t);
+      c.addEventListener("click", ()=>selectSpot(i));
+      layer.appendChild(c);
+      spotEls.push(c);
+    });
+  }catch(e){
+    document.getElementById("mapWrap").innerHTML =
+      '<div class="empty">지도를 그리지 못했어요. ('+(e.message||"오류")+")</div>";
+  }
+})();
+
+function selectSpot(i){
+  selectedIdx = i;
+  spotEls.forEach((c,k)=>c.classList.toggle("sel", k===i));
+  showPanel(i);
 }
 
-function renderSpotCards(){
-  const box = document.getElementById("spotCards");
-  if(!box) return;
-  box.innerHTML = SPOTS.map((s,i)=>{
-    if(activeFilter!=="all" && s.region!==activeFilter) return "";
-    const w = wxData[i];
-    const sc = w ? (w.ok ? '<b style="color:'+scoreColor(w.score)+'">'+w.score+'점</b>' : "날씨 실패")
-                 : "측정 중…";
-    return '<div class="spot-card" onclick="showPanel('+i+')">'
-      + '<div class="nm">'+s.name+'</div>'
-      + '<div class="rg">'+s.region+' · '+s.type+'</div>'
-      + '<div class="sc" id="card-score-'+i+'">별보기 '+sc+'</div></div>';
-  }).join("");
-}
-
-if(HAS_MAP){
-  map = L.map("map").setView([36.4, 127.9], 7);
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{
-    attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
-    maxZoom:19
-  }).addTo(map);
+function applyFilter(){
   SPOTS.forEach((s,i)=>{
-    const m = L.marker([s.lat,s.lng],{icon:makeIcon("#9ca3af")}).addTo(map);
-    m.on("click", ()=>showPanel(i));
-    markers.push(m);
+    const show = activeFilter==="all" || s.region===activeFilter;
+    if(spotEls[i]) spotEls[i].style.display = show ? "" : "none";
   });
-}else{
-  document.getElementById("map").innerHTML =
-    '<div class="fallback"><div class="fb-notice">🗺️ 지도 라이브러리를 불러오지 못했어요.<br>'
-    + '미리보기 환경이나 네트워크 문제일 수 있어요. 파일은 크롬/사파리에서 직접 열면 지도가 정상 표시됩니다.<br>'
-    + '아래 목록에서 스팟별 실시간 날씨와 별보기 지수는 그대로 볼 수 있어요 👇</div>'
-    + '<div id="spotCards"></div></div>';
-  renderSpotCards();
 }
-
 document.querySelectorAll("#filters button").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     document.querySelectorAll("#filters button").forEach(b=>b.classList.remove("on"));
     btn.classList.add("on");
     activeFilter = btn.dataset.f;
-    if(HAS_MAP){
-      SPOTS.forEach((s,i)=>{
-        const show = activeFilter==="all" || s.region===activeFilter;
-        if(show && !map.hasLayer(markers[i])) markers[i].addTo(map);
-        if(!show && map.hasLayer(markers[i])) map.removeLayer(markers[i]);
-      });
-    }else{
-      renderSpotCards();
-    }
+    applyFilter();
   });
 });
 
+/* ============ 날씨 ============ */
 async function fetchWeather(s){
-  const url = "https://api.open-meteo.com/v1/forecast?latitude="+s.lat+"&longitude="+s.lng
-    + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,wind_speed_10m"
-    + "&hourly=cloud_cover&timezone=Asia%2FSeoul&forecast_days=2";
-  const r = await fetch(url);
-  if(!r.ok) throw new Error("wx");
-  return r.json();
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const url = "https://api.open-meteo.com/v1/forecast?latitude="+s.lat+"&longitude="+s.lng
+      + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,cloud_cover,wind_speed_10m"
+      + "&hourly=cloud_cover&timezone=Asia%2FSeoul&forecast_days=2";
+    const r = await fetch(url, {signal: ctrl.signal});
+    if(!r.ok) throw new Error("wx "+r.status);
+    return await r.json();
+  }finally{
+    clearTimeout(timer);
+  }
 }
 
 function analyze(d){
@@ -354,9 +389,10 @@ function showPanel(i){
       + '<div class="moon">'+moon.emoji+" "+moon.name+" · 달 밝기 "+Math.round(moon.illum*100)
       + "% · 오늘 밤 평균 구름 "+Math.round(a.avg)+"%</div></div>";
   }else{
-    html += '<div class="loading">날씨 정보를 불러오지 못했어요. 잠시 후 다시 눌러보세요.</div>';
+    html += '<div class="loading">날씨 정보를 불러오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요.</div>'
+      + '<div style="text-align:center"><button class="retry" onclick="init()">다시 시도</button></div>';
   }
-  if(s.warn) html += '<div class="note warn" style="margin-top:4px">⚠️ '+s.warn+"</div>";
+  if(s.warn) html += '<div class="note warn" style="margin-top:10px">⚠️ '+s.warn+"</div>";
   panel.innerHTML = html;
 }
 
@@ -367,12 +403,14 @@ async function init(){
   try{
     results = await Promise.allSettled(SPOTS.map(s=>fetchWeather(s)));
   }catch(e){ results = []; }
+  let okCount = 0;
   results.forEach((r,i)=>{
     if(r.status==="fulfilled"){
       const analyzed = analyze(r.value);
       const score = starScore(analyzed.avg, moon.illum);
       wxData[i] = {ok:true, data:r.value, analyzed, score};
-      if(HAS_MAP) markers[i].setIcon(makeIcon(scoreColor(score)));
+      if(spotEls[i]) spotEls[i].setAttribute("fill", scoreColor(score));
+      okCount++;
     }else{
       wxData[i] = {ok:false};
     }
@@ -381,18 +419,21 @@ async function init(){
   const ranked = SPOTS.map((s,i)=>({i, score: wxData[i] && wxData[i].ok ? wxData[i].score : -1}))
     .filter(x=>x.score>=0).sort((a,b)=>b.score-a.score).slice(0,3);
   const medals = ["🥇","🥈","🥉"];
-  document.getElementById("top3").innerHTML = ranked.length
-    ? '<div style="width:100%;font-size:13px;color:var(--muted);margin-bottom:2px">오늘 밤 별보기 TOP 3</div>' + ranked.map((r,k)=>{
+  if(ranked.length){
+    document.getElementById("top3").innerHTML =
+      '<div style="width:100%;font-size:13px;color:var(--muted);margin-bottom:2px">오늘 밤 별보기 TOP 3</div>' + ranked.map((r,k)=>{
         const s = SPOTS[r.i];
-        return '<div class="top-card" onclick="showPanel('+r.i+')">'
+        return '<div class="top-card" onclick="selectSpot('+r.i+')">'
           + '<div class="rank">'+medals[k]+' 오늘 밤</div>'
           + '<div class="nm">'+s.name+"</div>"
           + '<div class="sc"><b style="color:'+scoreColor(r.score)+'">'+r.score+"</b>점 · "+s.region
           + " · 구름 "+Math.round(wxData[r.i].analyzed.avg)+"%</div></div>";
-      }).join("")
-    : '<div class="loading">날씨 정보를 가져오지 못했어요. 네트워크 연결을 확인해주세요.</div>';
-
-  if(!HAS_MAP) renderSpotCards();
+      }).join("");
+  }else{
+    document.getElementById("top3").innerHTML =
+      '<div class="loading">날씨 정보를 가져오지 못했어요.<br>미리보기에서는 네트워크가 제한될 수 있어요. '
+      + '파일을 크롬에서 직접 열면 실시간 날씨가 표시됩니다. <button class="retry" onclick="init()">다시 시도</button></div>';
+  }
 }
 init();
 </script>
