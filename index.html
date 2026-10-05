@@ -72,6 +72,28 @@
     #mapWrap{min-height:380px;}
     aside{max-width:none; margin:14px 0 0; max-height:none;}
   }
+  /* ===== 모바일 최적화 ===== */
+  @media (max-width: 768px){
+    header{padding:14px 14px 10px; gap:10px;}
+    header h1{font-size:19px;}
+    header p{font-size:12px;}
+    .moon-chip{margin-left:0; font-size:12px; padding:6px 12px;}
+    #top3{flex-wrap:nowrap; overflow-x:auto; padding:4px 14px 10px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;}
+    .top-card{min-width:210px; flex-shrink:0; scroll-snap-align:start;}
+    #filters{flex-wrap:nowrap; overflow-x:auto; padding:0 14px 10px; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+    #filters::-webkit-scrollbar{display:none;}
+    #filters button{flex-shrink:0; padding:10px 18px; font-size:14px;}
+    main{padding:0 12px;}
+    #mapWrap{min-height:430px;}
+    aside{padding:14px;}
+    .wx-grid{grid-template-columns:repeat(2,1fr);}
+    .wx-grid div{padding:10px 4px; font-size:14px;}
+    .star-box .score{font-size:34px;}
+    .legend{padding:8px 14px; font-size:11px; gap:10px;}
+    footer{padding:8px 14px 16px;}
+    .navi-btn{display:block; text-align:center; padding:12px 16px; font-size:14px;}
+    .retry{padding:10px 22px; font-size:14px;}
+  }
 </style>
 </head>
 <body>
@@ -294,7 +316,7 @@ const spotEls = [];
       const q = project(s.lng, s.lat);
       const c = document.createElementNS(SVGNS,"circle");
       c.setAttribute("cx", (q[0]+(s.ox||0)).toFixed(1)); c.setAttribute("cy", (q[1]+(s.oy||0)).toFixed(1));
-      c.setAttribute("r", 8); c.setAttribute("class","spot");
+      c.setAttribute("r", spotR()); c.setAttribute("class","spot");
       c.setAttribute("fill", "#9ca3af");
       const t = document.createElementNS(SVGNS,"title");
       t.textContent = s.name+" · "+s.addr;
@@ -309,11 +331,26 @@ const spotEls = [];
   }
 })();
 
+function spotR(){ return window.matchMedia("(max-width: 768px)").matches ? 11 : 8; }
+function applySpotSize(){
+  const r = spotR();
+  spotEls.forEach((c,k)=>c.setAttribute("r", k===selectedIdx ? r+3 : r));
+}
 function selectSpot(i){
   selectedIdx = i;
   spotEls.forEach((c,k)=>c.classList.toggle("sel", k===i));
+  applySpotSize();
   showPanel(i);
+  if(window.matchMedia("(max-width: 768px)").matches){
+    const p = document.getElementById("panel");
+    if(p && p.scrollIntoView) p.scrollIntoView({behavior:"smooth", block:"nearest"});
+  }
 }
+let __rzT = null;
+window.addEventListener("resize", ()=>{
+  clearTimeout(__rzT);
+  __rzT = setTimeout(applySpotSize, 200);
+});
 
 function applyFilter(){
   SPOTS.forEach((s,i)=>{
