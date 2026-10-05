@@ -57,6 +57,9 @@
   .star-box .moon{font-size:13px; color:var(--muted);}
   .note{font-size:12.5px; line-height:1.6; color:var(--muted); background:var(--panel2); border:1px dashed var(--line); border-radius:10px; padding:10px 12px;}
   .note.warn{color:#ffd9a8; border-color:#6b4a2f; background:#2a1f14;}
+  .addr-line{font-size:13px; color:var(--muted); margin-bottom:8px;}
+  .navi-btn{display:inline-block; font-size:13px; font-weight:700; color:#1a1a1a; background:var(--accent); border-radius:999px; padding:8px 16px; text-decoration:none; margin-bottom:12px;}
+  .navi-btn:hover{filter:brightness(1.08);}
   .retry{margin-top:10px; background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:999px; padding:8px 18px; font-size:13px; cursor:pointer; font-family:inherit;}
   .retry:hover{border-color:var(--accent);}
   .legend{display:flex; gap:14px; padding:10px 22px; font-size:12px; color:var(--muted); flex-wrap:wrap;}
@@ -86,7 +89,7 @@ window.addEventListener("error", function(e){
 <header>
   <h1><span class="star">★</span> 차박 지도</h1>
   <div class="moon-chip" id="moonChip">달 정보 불러오는 중…</div>
-  <p>전국 차박 스팟 20곳 · 실시간 날씨(Open-Meteo) · 오늘 밤 별보기 지수 — 지도의 점을 눌러보세요</p>
+  <p>전국 차박 스팟 50곳 · 실시간 날씨(Open-Meteo) · 오늘 밤 별보기 지수 — 지도의 점을 눌러보세요</p>
 </header>
 
 <div id="top3"></div>
@@ -140,69 +143,56 @@ const KOREA_RINGS = [[[126.634, 37.782], [126.665, 37.801], [126.667, 37.917], [
 })();
 
 const SPOTS = [
-  {name:"삼포해변", region:"동해안", type:"바다", lat:38.3148, lng:128.5349,
-   desc:"에메랄드빛 얕은 바다와 한적함으로 유명한 동해 차박 1순위. 아침에 트렁크를 열면 일출이 첫 화면.",
-   toilet:"있음 (여름 샤워장 운영)", cooking:"주변 확인 필요"},
-  {name:"안목해변", region:"동해안", type:"바다", lat:37.7736, lng:128.9454,
-   desc:"커피거리와 바다뷰를 동시에 즐기는 곳. 도심 접근성이 좋아 초보 차박러에게 추천.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"후포해수욕장", region:"동해안", type:"바다", lat:36.6759, lng:129.4441,
-   desc:"남으로 내려갈수록 한적해지는 동해. 여름 성수기에도 비교적 덜 붐비는 해변.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"영덕 해맞이공원", region:"동해안", type:"바다", lat:36.4274, lng:129.4353,
-   desc:"동해 일출을 정면으로 보는 공원 주차장 차박. 늘어선 풍력발전기가 이색적인 풍경.",
-   toilet:"있음", cooking:"취사 제한적"},
-  {name:"안반데기", region:"내륙·산", type:"산·고원", lat:37.6228, lng:128.7504,
-   desc:"해발 1,100m 고랭지 마을. 풍력발전기와 배추밭 위로 펼쳐지는 은하수 성지.",
-   toilet:"있음 (공영주차장 인근)", cooking:"주의 필요",
-   warn:"정식 자동차야영장이 아니에요. 차량 숙박·취사 전 현장 이용 규정을 꼭 확인하세요."},
-  {name:"별마로천문대", region:"내륙·산", type:"산·고원", lat:37.1934, lng:128.4955,
-   desc:"국내 최저 수준의 빛공해. 봉래산 정상까지 차로 오르는 천문 차박의 성지.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"민둥산", region:"내륙·산", type:"산·고원", lat:37.2436, lng:128.7736,
-   desc:"고원 지대라 여름에도 서늘한 산악 차박지. 가을 억새 시즌 풍경이 일품.",
-   toilet:"확인 필요", cooking:"확인 필요"},
-  {name:"도담삼봉", region:"내륙·산", type:"강·호수", lat:37.0001, lng:128.3439,
-   desc:"남한강과 기암괴석이 어우러진 강변 노지. 단양팔경의 중심.",
-   toilet:"확인 필요", cooking:"확인 필요"},
-  {name:"수주팔봉", region:"내륙·산", type:"강·호수", lat:36.9064, lng:127.9343,
-   desc:"충주호반 드라이브 코스의 노지 포인트. 탁 트인 호수 뷰.",
-   toilet:"확인 필요", cooking:"확인 필요"},
-  {name:"적상산", region:"내륙·산", type:"산·고원", lat:35.9464, lng:127.6902,
-   desc:"산정호수와 가을 단풍으로 유명한 산악 차박지. 적상산 사고(史庫)도 함께.",
-   toilet:"확인 필요", cooking:"확인 필요"},
-  {name:"황매산", region:"내륙·산", type:"산·고원", lat:35.4942, lng:127.9746,
-   desc:"오토캠핑 구역이 갖춰진 고원. 봄 철쭉, 가을 억새 군락이 장관.",
-   toilet:"있음", cooking:"가능 (지정 구역)"},
-  {name:"꽃지해수욕장", region:"서해안", type:"바다", lat:36.4871, lng:126.3355,
-   desc:"할미·할아비 바위와 서해 일몰의 정석. 안면도 대표 차박지.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"몽산포해변", region:"서해안", type:"바다", lat:36.6737, lng:126.2922,
-   desc:"울창한 솔숲 사이로 차를 대는 숲속 차박. 여름에도 시원한 그늘.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"무창포해수욕장", region:"서해안", type:"바다", lat:36.2448, lng:126.5361,
-   desc:"신비의 바닷길이 열리는 날에 맞춰 가면 특별한 경험. 물때표 확인 필수.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"마시안해변", region:"서해안", type:"바다", lat:37.4276, lng:126.4187,
-   desc:"수도권에서 가까운 낙조 명소. 갯벌과 방조제 드라이브 코스.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"변산해수욕장", region:"서해안", type:"바다", lat:35.6803, lng:126.5311,
-   desc:"서해 최고의 노을 명소 중 하나. 변산반도국립공원과 함께 즐기기.",
-   toilet:"있음", cooking:"취사 제한적",
-   warn:"국립공원 인접 구역은 취사·야영 규정을 확인하세요."},
-  {name:"증도", region:"서해안", type:"바다", lat:34.9478, lng:126.1249,
-   desc:"유네스코 생물권 보전지역 갯벌. 태평염전과 짱뚱어다리까지.",
-   toilet:"확인 필요", cooking:"확인 필요"},
-  {name:"학동몽돌해수욕장", region:"남해안", type:"바다", lat:34.7733, lng:128.6406,
-   desc:"몽돌 굴러가는 소리가 자장가. 파도 소리 ASMR 차박.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"만성리해수욕장", region:"남해안", type:"바다", lat:34.7775, lng:127.7451,
-   desc:"검은모래의 이국적 분위기 + 여수 밤바다 야경까지.",
-   toilet:"있음", cooking:"주변 확인 필요"},
-  {name:"김녕해수욕장", region:"제주", type:"바다", lat:33.5558, lng:126.7603,
-   desc:"코발트빛 바다. 월정리·세화와 묶어 즐기는 제주 동부 코스.",
-   toilet:"있음", cooking:"취사 제한적",
-   warn:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
+  {name:"삼포해변", region:"동해안", type:"바다", lat:38.3148, lng:128.5349, ox:0.0, oy:0.0, addr:"강원특별자치도 고성군 죽왕면 송암리", navi:"https://map.kakao.com/link/search/%EC%82%BC%ED%8F%AC%ED%95%B4%EB%B3%80", desc:"에메랄드빛 얕은 바다와 한적함으로 유명한 동해 차박 1순위. 아침에 트렁크를 열면 일출이 첫 화면.", toilet:"있음 (여름 샤워장 운영)", cooking:"주변 확인 필요", note:""},
+  {name:"안목해변", region:"동해안", type:"바다", lat:37.7736, lng:128.9454, ox:0.0, oy:0.0, addr:"강원특별자치도 강릉시", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%AA%A9%ED%95%B4%EB%B3%80", desc:"커피거리와 바다뷰를 동시에 즐기는 곳. 도심 접근성이 좋아 초보 차박러에게 추천.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"후포해수욕장", region:"동해안", type:"바다", lat:36.6759, lng:129.4441, ox:1.5, oy:-3.4, addr:"경상북도 울진군 후포면 후포리", navi:"https://map.kakao.com/link/search/%ED%9B%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"남으로 내려갈수록 한적해지는 동해. 여름 성수기에도 비교적 덜 붐비는 해변.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"영덕 해맞이공원", region:"동해안", type:"바다", lat:36.4274, lng:129.4353, ox:0.0, oy:0.0, addr:"경상북도 영덕군 영덕읍 대탄리", navi:"https://map.kakao.com/link/search/%EC%98%81%EB%8D%95%20%ED%95%B4%EB%A7%9E%EC%9D%B4%EA%B3%B5%EC%9B%90", desc:"동해 일출을 정면으로 보는 공원 주차장 차박. 늘어선 풍력발전기가 이색적인 풍경.", toilet:"있음", cooking:"취사 제한적", note:""},
+  {name:"안반데기", region:"내륙·산", type:"산·고원", lat:37.6228, lng:128.7504, ox:0.0, oy:0.0, addr:"강원특별자치도 강릉시 왕산면", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%B0%98%EB%8D%B0%EA%B8%B0", desc:"해발 1,100m 고랭지 마을. 풍력발전기와 배추밭 위로 펼쳐지는 은하수 성지.", toilet:"있음 (공영주차장 인근)", cooking:"주의 필요", note:"정식 자동차야영장이 아니에요. 차량 숙박·취사 전 현장 이용 규정을 꼭 확인하세요."},
+  {name:"별마로천문대", region:"내륙·산", type:"산·고원", lat:37.1934, lng:128.4955, ox:0.0, oy:0.0, addr:"강원특별자치도 영월군 영월읍 덕포리", navi:"https://map.kakao.com/link/search/%EB%B3%84%EB%A7%88%EB%A1%9C%EC%B2%9C%EB%AC%B8%EB%8C%80", desc:"국내 최저 수준의 빛공해. 봉래산 정상까지 차로 오르는 천문 차박의 성지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"민둥산", region:"내륙·산", type:"산·고원", lat:37.2436, lng:128.7736, ox:0.0, oy:0.0, addr:"강원특별자치도 정선군 남면 무릉리", navi:"https://map.kakao.com/link/search/%EB%AF%BC%EB%91%A5%EC%82%B0", desc:"고원 지대라 여름에도 서늘한 산악 차박지. 가을 억새 시즌 풍경이 일품.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"도담삼봉", region:"내륙·산", type:"강·호수", lat:37.0001, lng:128.3439, ox:0.0, oy:0.0, addr:"충청북도 단양군 하괴리", navi:"https://map.kakao.com/link/search/%EB%8F%84%EB%8B%B4%EC%82%BC%EB%B4%89", desc:"남한강과 기암괴석이 어우러진 강변 노지. 단양팔경의 중심.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"수주팔봉", region:"내륙·산", type:"강·호수", lat:36.9064, lng:127.9343, ox:0.0, oy:0.0, addr:"충청북도 충주시", navi:"https://map.kakao.com/link/search/%EC%88%98%EC%A3%BC%ED%8C%94%EB%B4%89", desc:"충주호반 드라이브 코스의 노지 포인트. 탁 트인 호수 뷰.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"적상산", region:"내륙·산", type:"산·고원", lat:35.9464, lng:127.6902, ox:0.0, oy:0.0, addr:"전북특별자치도 무주군 적상면", navi:"https://map.kakao.com/link/search/%EC%A0%81%EC%83%81%EC%82%B0", desc:"산정호수와 가을 단풍으로 유명한 산악 차박지. 적상산 사고(史庫)도 함께.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"꽃지해수욕장", region:"서해안", type:"바다", lat:36.4871, lng:126.3355, ox:0.0, oy:0.0, addr:"충청남도 태안군 안면읍", navi:"https://map.kakao.com/link/search/%EA%BD%83%EC%A7%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"할미·할아비 바위와 서해 일몰의 정석. 안면도 대표 차박지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"몽산포해변", region:"서해안", type:"바다", lat:36.6737, lng:126.2922, ox:0.0, oy:0.0, addr:"충청남도 태안군 남면", navi:"https://map.kakao.com/link/search/%EB%AA%BD%EC%82%B0%ED%8F%AC%ED%95%B4%EB%B3%80", desc:"울창한 솔숲 사이로 차를 대는 숲속 차박. 여름에도 시원한 그늘.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"무창포해수욕장", region:"서해안", type:"바다", lat:36.2448, lng:126.5361, ox:1.5, oy:4.2, addr:"충청남도 보령시 관당리", navi:"https://map.kakao.com/link/search/%EB%AC%B4%EC%B0%BD%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"신비의 바닷길이 열리는 날에 맞춰 가면 특별한 경험. 물때표 확인 필수.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"마시안해변", region:"서해안", type:"바다", lat:37.4276, lng:126.4187, ox:5.1, oy:2.1, addr:"인천광역시 영종구 용유동", navi:"https://map.kakao.com/link/search/%EB%A7%88%EC%8B%9C%EC%95%88%ED%95%B4%EB%B3%80", desc:"수도권에서 가까운 낙조 명소. 갯벌과 방조제 드라이브 코스.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"변산해수욕장", region:"서해안", type:"바다", lat:35.6803, lng:126.5311, ox:-1.2, oy:-1.4, addr:"전북특별자치도 부안군 대항리", navi:"https://map.kakao.com/link/search/%EB%B3%80%EC%82%B0%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서해 최고의 노을 명소 중 하나. 변산반도국립공원과 함께 즐기기.", toilet:"있음", cooking:"취사 제한적", note:"국립공원 인접 구역은 취사·야영 규정을 확인하세요."},
+  {name:"증도", region:"서해안", type:"바다", lat:34.9868, lng:126.161, ox:0.0, oy:0.0, addr:"전라남도 신안군 증도면", navi:"https://map.kakao.com/link/search/%EC%A6%9D%EB%8F%84", desc:"유네스코 생물권 보전지역 갯벌. 태평염전과 짱뚱어다리까지.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"학동몽돌해수욕장", region:"남해안", type:"바다", lat:34.7733, lng:128.6406, ox:-4.1, oy:2.8, addr:"경상남도 거제시 동부면", navi:"https://map.kakao.com/link/search/%ED%95%99%EB%8F%99%EB%AA%BD%EB%8F%8C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"몽돌 굴러가는 소리가 자장가. 파도 소리 ASMR 차박.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"만성리해수욕장", region:"남해안", type:"바다", lat:34.7775, lng:127.7451, ox:0.0, oy:0.0, addr:"전라남도 여수시", navi:"https://map.kakao.com/link/search/%EB%A7%8C%EC%84%B1%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"검은모래의 이국적 분위기 + 여수 밤바다 야경까지.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"김녕해수욕장", region:"제주", type:"바다", lat:33.5558, lng:126.7603, ox:3.4, oy:-0.5, addr:"제주특별자치도 제주시 구좌읍 김녕리", navi:"https://map.kakao.com/link/search/%EA%B9%80%EB%85%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"코발트빛 바다. 월정리·세화와 묶어 즐기는 제주 동부 코스.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
+  {name:"방아머리해변", region:"서해안", type:"바다", lat:37.2875, lng:126.5741, ox:0.0, oy:0.0, addr:"경기도 안산시 단원구 대부동", navi:"https://map.kakao.com/link/search/%EB%B0%A9%EC%95%84%EB%A8%B8%EB%A6%AC%ED%95%B4%EB%B3%80", desc:"대부도 대표 해변. 갯벌 체험과 서해 낙조.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"을왕리해수욕장", region:"서해안", type:"바다", lat:37.4469, lng:126.3724, ox:-5.1, oy:-2.1, addr:"인천광역시 중구 을왕동", navi:"https://map.kakao.com/link/search/%EC%9D%84%EC%99%95%EB%A6%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"수도권 대표 낙조 해변. 을왕산 둘레길과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"석모도 만남의광장", region:"서해안", type:"바다", lat:37.6978, lng:126.3142, ox:0.0, oy:0.0, addr:"인천광역시 강화군 삼산면 석포리", navi:"https://map.kakao.com/link/search/%EC%84%9D%EB%AA%A8%EB%8F%84%20%EB%A7%8C%EB%82%A8%EC%9D%98%EA%B4%91%EC%9E%A5", desc:"석모대교 뷰 공영주차장. 한적한 스텔스 차박 명소.", toilet:"있음(동절기 확인 필요)", cooking:"취사 자제", note:"주차요금 2,000원. 조용한 스텔스 차박 권장."},
+  {name:"속초해수욕장", region:"동해안", type:"바다", lat:38.1881, lng:128.6057, ox:0.0, oy:0.0, addr:"강원특별자치도 속초시", navi:"https://map.kakao.com/link/search/%EC%86%8D%EC%B4%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"동해 대표 해변. 속초 시내·중앙시장 접근성 최고.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"하조대해변", region:"동해안", type:"바다", lat:38.0201, lng:128.7235, ox:0.0, oy:0.0, addr:"강원특별자치도 양양군 현북면 하광정리", navi:"https://map.kakao.com/link/search/%ED%95%98%EC%A1%B0%EB%8C%80%ED%95%B4%EB%B3%80", desc:"하조대 등대와 기암괴석. 서퍼들의 한적한 해변.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"화진포해수욕장", region:"동해안", type:"바다", lat:38.4783, lng:128.4386, ox:0.0, oy:0.0, addr:"강원특별자치도 고성군 거진읍 화포리", navi:"https://map.kakao.com/link/search/%ED%99%94%EC%A7%84%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"화진포 호수와 해변. 역사 유적과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"대천해수욕장", region:"서해안", type:"바다", lat:36.3113, lng:126.5127, ox:-1.5, oy:-4.2, addr:"충청남도 보령시", navi:"https://map.kakao.com/link/search/%EB%8C%80%EC%B2%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서해안 최대 해변. 머드축제의 고장.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"의림지", region:"내륙·산", type:"강·호수", lat:37.1732, lng:128.2106, ox:0.0, oy:0.0, addr:"충청북도 제천시", navi:"https://map.kakao.com/link/search/%EC%9D%98%EB%A6%BC%EC%A7%80", desc:"삼한시대 저수지. 제림 솔숲 산책로.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"선유도해수욕장", region:"서해안", type:"바다", lat:35.8181, lng:126.412, ox:0.0, oy:0.0, addr:"전북특별자치도 군산시 옥도면", navi:"https://map.kakao.com/link/search/%EC%84%A0%EC%9C%A0%EB%8F%84%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"고군산군도. 선유8경의 섬 바다.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"땅끝마을", region:"남해안", type:"바다", lat:34.2984, lng:126.5294, ox:0.0, oy:0.0, addr:"전라남도 해남군 송호리", navi:"https://map.kakao.com/link/search/%EB%95%85%EB%81%9D%EB%A7%88%EC%9D%84", desc:"한반도 최남단. 땅끝탑 일출·일몰.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"순천만습지", region:"남해안", type:"바다", lat:34.8852, lng:127.5103, ox:0.0, oy:0.0, addr:"전라남도 순천시 선학리", navi:"https://map.kakao.com/link/search/%EC%88%9C%EC%B2%9C%EB%A7%8C%EC%8A%B5%EC%A7%80", desc:"갈대밭과 흑두루미. 와온해변 낙조와 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"영일대해수욕장", region:"동해안", type:"바다", lat:36.056, lng:129.3778, ox:0.0, oy:0.0, addr:"경상북도 포항시 북구 두호동", navi:"https://map.kakao.com/link/search/%EC%98%81%EC%9D%BC%EB%8C%80%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"포항 대표 해변. 영일대 누각 야경.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"다대포해수욕장", region:"남해안", type:"바다", lat:35.0482, lng:128.966, ox:0.0, oy:0.0, addr:"부산광역시 사하구 다대동", navi:"https://map.kakao.com/link/search/%EB%8B%A4%EB%8C%80%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"낙조 명소. 꿈의 낙조분수.", toilet:"있음", cooking:"취사 제한적", note:"도심 해변 — 야간 주차 규정 확인."},
+  {name:"진하해수욕장", region:"동해안", type:"바다", lat:35.3833, lng:129.3457, ox:-1.6, oy:-13.6, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EC%A7%84%ED%95%98%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"울산 대표 해변. 서생포왜성과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"솔개해수욕장", region:"동해안", type:"바다", lat:35.3744, lng:129.3458, ox:1.7, oy:15.2, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EC%86%94%EA%B0%9C%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"진하 옆 한적한 해변. 스노클링 명소.", toilet:"있음(공중화장실)", cooking:"주변 확인 필요", note:""},
+  {name:"정자항", region:"동해안", type:"바다", lat:35.6166, lng:129.4522, ox:0.0, oy:0.0, addr:"울산광역시 북구", navi:"https://map.kakao.com/link/search/%EC%A0%95%EC%9E%90%ED%95%AD", desc:"등대와 방파제. 노지 차박 후기 다수.", toilet:"있음", cooking:"취사 제한적", note:""},
+  {name:"구조라해수욕장", region:"남해안", type:"바다", lat:34.8081, lng:128.6917, ox:4.1, oy:-2.8, addr:"경상남도 거제시 일운면", navi:"https://map.kakao.com/link/search/%EA%B5%AC%EC%A1%B0%EB%9D%BC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"거제 대표 해변. 외도 보타니아와 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"함덕해수욕장", region:"제주", type:"바다", lat:33.5432, lng:126.6699, ox:-3.4, oy:0.5, addr:"제주특별자치도 제주시 조천읍 함덕리", navi:"https://map.kakao.com/link/search/%ED%95%A8%EB%8D%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"에메랄드빛 바다. 서우봉 둘레길.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
+  {name:"협재해수욕장", region:"제주", type:"바다", lat:33.3933, lng:126.2389, ox:0.0, oy:0.0, addr:"제주특별자치도 제주시 한림읍 협재리", navi:"https://map.kakao.com/link/search/%ED%98%91%EC%9E%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"비양도 뷰. 제주 서부 대표 해변.", toilet:"있음", cooking:"취사 제한적", note:"제주는 해변 노지 차박 단속이 있어요. 지정 야영장 이용을 권장합니다."},
+  {name:"안동호", region:"내륙·산", type:"강·호수", lat:36.6358, lng:128.8479, ox:0.0, oy:0.0, addr:"경상북도 안동시", navi:"https://map.kakao.com/link/search/%EC%95%88%EB%8F%99%ED%98%B8", desc:"안동댐 호반. 월영교 야경 드라이브.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"대청호", region:"내륙·산", type:"강·호수", lat:36.4186, lng:127.4971, ox:0.0, oy:0.0, addr:"충청북도 보은군", navi:"https://map.kakao.com/link/search/%EB%8C%80%EC%B2%AD%ED%98%B8", desc:"대청댐 호반 드라이브. 벚꽃 시즌 명소.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"소양호", region:"내륙·산", type:"강·호수", lat:37.9927, lng:128.0533, ox:0.0, oy:0.0, addr:"강원특별자치도 인제군 남면", navi:"https://map.kakao.com/link/search/%EC%86%8C%EC%96%91%ED%98%B8", desc:"소양강댐 호반. 처녀뱃사공 노래비.", toilet:"확인 필요", cooking:"확인 필요", note:""},
+  {name:"구룡포해수욕장", region:"동해안", type:"바다", lat:35.9725, lng:129.548, ox:0.0, oy:0.0, addr:"경상북도 포항시 남구 구룡포읍", navi:"https://map.kakao.com/link/search/%EA%B5%AC%EB%A3%A1%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"일본인 가옥거리와 과메기의 고장.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"감포항", region:"동해안", type:"바다", lat:35.8042, lng:129.5026, ox:0.0, oy:0.0, addr:"경상북도 경주시 감포읍", navi:"https://map.kakao.com/link/search/%EA%B0%90%ED%8F%AC%ED%95%AD", desc:"경주 동해안 항구. 문무대왕릉 인근.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"송정해수욕장", region:"남해안", type:"바다", lat:35.1777, lng:129.1986, ox:-0.8, oy:4.0, addr:"부산광역시 해운대구 송정동", navi:"https://map.kakao.com/link/search/%EC%86%A1%EC%A0%95%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"서핑 명소. 해운대 옆 한적함.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"고래불해수욕장", region:"동해안", type:"바다", lat:36.5972, lng:129.4105, ox:-1.5, oy:3.4, addr:"경상북도 영덕군 병곡면", navi:"https://map.kakao.com/link/search/%EA%B3%A0%EB%9E%98%EB%B6%88%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"영덕 대표 해변. 국민야영장 인근.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"일광해수욕장", region:"남해안", type:"바다", lat:35.2611, lng:129.2337, ox:-1.1, oy:-3.3, addr:"부산광역시 기장군 일광읍", navi:"https://map.kakao.com/link/search/%EC%9D%BC%EA%B4%91%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5", desc:"기장 대표 해변. 일광산과 함께.", toilet:"있음", cooking:"주변 확인 필요", note:""},
+  {name:"황매산", region:"내륙·산", type:"산·고원", lat:35.4942, lng:127.9746, ox:0.0, oy:0.0, addr:"경상남도 합천군 대병면", navi:"https://map.kakao.com/link/search/%ED%99%A9%EB%A7%A4%EC%82%B0", desc:"오토캠핑 구역이 갖춰진 고원. 봄 철쭉, 가을 억새 군락이 장관.", toilet:"있음", cooking:"가능 (지정 구역)", note:""},
+  {name:"동막해변", region:"서해안", type:"바다", lat:37.5921, lng:126.459, ox:0.0, oy:0.0, addr:"인천광역시 강화군 화도면", navi:"https://map.kakao.com/link/search/%EB%8F%99%EB%A7%89%ED%95%B4%EB%B3%80", desc:"소나무숲 야영구역과 광활한 갯벌. 강화 대표 낙조 명소.", toilet:"있음", cooking:"유료 야영구역 이용", note:"소나무밭 야영구역은 유료 운영(7~10월). 규정 확인."},
+  {name:"곰소항", region:"서해안", type:"바다", lat:35.5861, lng:126.6096, ox:1.2, oy:1.4, addr:"전북특별자치도 부안군 곰소리", navi:"https://map.kakao.com/link/search/%EA%B3%B0%EC%86%8C%ED%95%AD", desc:"젓갈로 유명한 항구. 곰소염전과 함께 둘러보기.", toilet:"있음", cooking:"가능", note:""},
+  {name:"간절곶", region:"동해안", type:"바다", lat:35.3592, lng:129.3618, ox:1.8, oy:-2.2, addr:"울산광역시 울주군 서생면", navi:"https://map.kakao.com/link/search/%EA%B0%84%EC%A0%88%EA%B3%B6", desc:"한반도에서 해가 가장 먼저 뜨는 곳. 간절곶 등대와 소망우체통.", toilet:"있음", cooking:"주변 확인 필요", note:""},
 ];
 
 const WMO = {0:"맑음",1:"대체로 맑음",2:"부분적 흐림",3:"흐림",45:"안개",48:"서리안개",
@@ -303,11 +293,11 @@ const spotEls = [];
     SPOTS.forEach((s,i)=>{
       const q = project(s.lng, s.lat);
       const c = document.createElementNS(SVGNS,"circle");
-      c.setAttribute("cx", q[0].toFixed(1)); c.setAttribute("cy", q[1].toFixed(1));
+      c.setAttribute("cx", (q[0]+(s.ox||0)).toFixed(1)); c.setAttribute("cy", (q[1]+(s.oy||0)).toFixed(1));
       c.setAttribute("r", 8); c.setAttribute("class","spot");
       c.setAttribute("fill", "#9ca3af");
       const t = document.createElementNS(SVGNS,"title");
-      t.textContent = s.name+" ("+s.region+")";
+      t.textContent = s.name+" · "+s.addr;
       c.appendChild(t);
       c.addEventListener("click", ()=>selectSpot(i));
       layer.appendChild(c);
@@ -370,6 +360,8 @@ function showPanel(i){
   const moon = moonInfo(new Date());
   let html = "<h2>"+s.name+"</h2>"
     + '<div class="badges"><span class="badge">'+s.region+'</span><span class="badge">'+s.type+"</span></div>"
+    + '<div class="addr-line">📍 '+s.addr+'</div>'
+    + '<a class="navi-btn" href="'+s.navi+'" target="_blank" rel="noopener">🧭 카카오맵에서 길찾기</a>'
     + '<p class="desc">'+s.desc+"</p>"
     + '<div class="fac"><div><span>화장실</span>'+s.toilet+"</div>"
     + "<div><span>취사</span>"+s.cooking+"</div></div>";
@@ -397,7 +389,7 @@ function showPanel(i){
 }
 
 async function init(){
-  document.getElementById("top3").innerHTML = '<div class="loading">20곳의 오늘 밤 하늘을 읽는 중…</div>';
+  document.getElementById("top3").innerHTML = '<div class="loading">50곳의 오늘 밤 하늘을 읽는 중…</div>';
   const moon = moonInfo(new Date());
   let results = [];
   try{
